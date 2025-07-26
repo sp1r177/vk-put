@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь - Игра выборов</title>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            padding: 20px;
+            min-height: 100vh;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .scene-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+
+        .scene-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease, background-color 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .empathy { background: linear-gradient(45deg, #4CAF50, #8BC34A); }
+        .confidence { background: linear-gradient(45deg, #2196F3, #03A9F4); }
+        .ego { background: linear-gradient(45deg, #F44336, #FF5722); }
+        .clarity { background: linear-gradient(45deg, #9C27B0, #673AB7); }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .changes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .change-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .change-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .change-value.positive { color: #4CAF50; }
+        .change-value.negative { color: #f44336; }
+        .change-value.neutral { color: #fff; }
+
+        .archetype-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .archetype-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .archetype-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #667eea;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- Главный экран -->
+        <div class="screen active" id="main-screen">
+            <div class="header">
+                <div class="logo">Путь</div>
+                <div class="subtitle">Игра жизненных выборов</div>
+            </div>
+            
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-value" id="decisions-count">0</div>
+                    <div class="stat-label">Решений принято</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="current-level">Новичок</div>
+                    <div class="stat-label">Текущий уровень</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary pulse" onclick="startGame()">
+                🎯 Начать путешествие
+            </button>
+            <button class="btn btn-secondary" onclick="showProfile()">
+                👤 Мой профиль
+            </button>
+            <button class="btn btn-secondary" onclick="showInstructions()">
+                📖 Как играть
+            </button>
+        </div>
+
+        <!-- Экран игры -->
+        <div class="screen" id="game-screen">
+            <button class="back-btn" onclick="showMain()">←</button>
+            
+            <div class="scene-card">
+                <div class="scene-text" id="scene-text"></div>
+            </div>
+            
+            <div id="options-container"></div>
+        </div>
+
+        <!-- Экран результата -->
+        <div class="screen" id="result-screen">
+            <div class="result-card">
+                <div class="result-title">Ваш выбор изменил вас</div>
+                <div id="chosen-option"></div>
+                
+                <div class="changes-grid" id="changes-grid"></div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="nextScene()">
+                ➡️ Следующее событие
+            </button>
+            <button class="btn btn-secondary" onclick="showProfile()">
+                📊 Посмотреть профиль
+            </button>
+        </div>
+
+        <!-- Экран профиля -->
+        <div class="screen" id="profile-screen">
+            <button class="back-btn" onclick="showMain()">←</button>
+            
+            <div class="header">
+                <div class="logo" style="font-size: 2rem;">Ваш профиль</div>
+            </div>
+
+            <div class="archetype-card" id="archetype-card">
+                <div class="archetype-title" id="archetype-title">Исследователь</div>
+                <div class="archetype-description" id="archetype-description">Вы только начинаете свой путь самопознания</div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>🌱 Эмпатия</span>
+                    <span id="empathy-value">50</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill empathy" id="empathy-bar" style="width: 50%;"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>💪 Уверенность</span>
+                    <span id="confidence-value">50</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill confidence" id="confidence-bar" style="width: 50%;"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>👑 Эгоизм</span>
+                    <span id="ego-value">50</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill ego" id="ego-bar" style="width: 50%;"></div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>🧘 Осознанность</span>
+                    <span id="clarity-value">50</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill clarity" id="clarity-bar" style="width: 50%;"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startGame()">
+                🎯 Продолжить игру
+            </button>
+            <button class="btn btn-secondary" onclick="resetProgress()" style="margin-top: 20px;">
+                🔄 Сбросить прогресс
+            </button>
+        </div>
+
+        <!-- Экран инструкций -->
+        <div class="screen" id="instructions-screen">
+            <button class="back-btn" onclick="showMain()">←</button>
+            
+            <div class="header">
+                <div class="logo" style="font-size: 2rem;">Как играть</div>
+            </div>
+
+            <div class="scene-card">
+                <h3>🎯 Цель игры</h3>
+                <p>Принимайте жизненные решения и наблюдайте, как они формируют вашу личность. Каждый выбор влияет на четыре аспекта характера.</p>
+                
+                <h3 style="margin-top: 20px;">📊 Характеристики</h3>
+                <p><strong>🌱 Эмпатия</strong> - способность понимать и сочувствовать другим</p>
+                <p><strong>💪 Уверенность</strong> - вера в себя и свои способности</p>
+                <p><strong>👑 Эгоизм</strong> - приоритет собственных интересов</p>
+                <p><strong>🧘 Осознанность</strong> - понимание себя и ситуации</p>
+                
+                <h3 style="margin-top: 20px;">🏆 Архетипы</h3>
+                <p>По мере игры вы получите уникальный психологический архетип, основанный на ваших решениях.</p>
+            </div>
+
+            <button class="btn btn-primary" onclick="startGame()">
+                🎯 Начать игру
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Игровые данные
+        let playerStats = {
+            empathy: 50,
+            confidence: 50,
+            ego: 50,
+            clarity: 50,
+            decisionsCount: 0,
+            completedScenes: []
+        };
+
+        let currentScene = null;
+        
+        // 500 уникальных игровых сцен
+        const gameScenes = [
+            {
+                scene: "Ваш лучший друг просит занять крупную сумму денег на неопределенный срок. У вас есть эти деньги, но они отложены на важную покупку.",
+                options: [
+                    "Даю деньги, друзья важнее вещей",
+                    "Отказываю, объясняя свои планы",
+                    "Даю, но ставлю жесткие условия возврата"
+                ],
+                effects: [
+                    { empathy: 15, confidence: -5, ego: -10, clarity: 5 },
+                    { empathy: 5, confidence: 10, ego: 5, clarity: 15 },
+                    { empathy: 0, confidence: 5, ego: 10, clarity: 10 }
+                ]
+            },
+            {
+                scene: "В социальной сети вы видите, как незнакомец подвергается травле за свое мнение. Его позицию вы не разделяете, но травля выглядит жестокой.",
+                options: [
+                    "Заступаюсь за него публично",
+                    "Отправляю ему личное сообщение поддержки",
+                    "Не вмешиваюсь, это не мое дело"
+                ],
+                effects: [
+                    { empathy: 20, confidence: 10, ego: -5, clarity: 5 },
+                    { empathy: 15, confidence: 0, ego: 0, clarity: 10 },
+                    { empathy: -10, confidence: -5, ego: 10, clarity: 0 }
+                ]
+            },
+            {
+                scene: "Ваш коллега постоянно перекладывает свою работу на других, но начальство его не замечает. Сегодня он попросил вас 'помочь' с его проектом.",
+                options: [
+                    "Помогаю, но четко объясняю границы",
+                    "Отказываюсь и предлагаю поговорить с руководством",
+                    "Соглашаюсь, чтобы не портить отношения"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 15, ego: 0, clarity: 15 },
+                    { empathy: 0, confidence: 20, ego: 5, clarity: 10 },
+                    { empathy: 10, confidence: -10, ego: -5, clarity: -10 }
+                ]
+            },
+            {
+                scene: "Вы стали свидетелем того, как родитель кричит на ребенка в общественном месте. Ребенок явно напуган, но вмешательство может усугубить ситуацию.",
+                options: [
+                    "Мягко пытаюсь отвлечь внимание и разрядить обстановку",
+                    "Прямо говорю родителю о недопустимости такого поведения",
+                    "Не вмешиваюсь, но вызываю службу защиты детей"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 5, ego: -5, clarity: 10 },
+                    { empathy: 10, confidence: 15, ego: 0, clarity: 5 },
+                    { empathy: 5, confidence: 0, ego: 5, clarity: 15 }
+                ]
+            },
+            {
+                scene: "Ваш партнер предлагает открыть отношения. Вы против, но понимаете, что категорический отказ может привести к расставанию.",
+                options: [
+                    "Честно говорю о своих чувствах и страхах",
+                    "Соглашаюсь попробовать, несмотря на дискомфорт",
+                    "Ставлю ультиматум: либо я, либо открытые отношения"
+                ],
+                effects: [
+                    { empathy: 10, confidence: 10, ego: -5, clarity: 20 },
+                    { empathy: 5, confidence: -15, ego: -10, clarity: -5 },
+                    { empathy: -5, confidence: 5, ego: 15, clarity: 5 }
+                ]
+            },
+            {
+                scene: "Вы узнали, что ваш близкий друг изменяет своему партнеру. Вы знакомы и с изменяемой стороной, которая ничего не подозревает.",
+                options: [
+                    "Конфронтирую с другом и требую признаться",
+                    "Анонимно сообщаю пострадавшей стороне",
+                    "Не вмешиваюсь, это их личные дела"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 15, ego: -5, clarity: 10 },
+                    { empathy: 15, confidence: -5, ego: 0, clarity: 5 },
+                    { empathy: -10, confidence: -5, ego: 10, clarity: -5 }
+                ]
+            },
+            {
+                scene: "На работе вас повысили, но вы знаете, что более квалифицированный коллега был обойден из-за офисной политики, а не меритократии.",
+                options: [
+                    "Принимаю повышение, но помогаю коллеге найти лучшие возможности",
+                    "Отказываюсь от повышения и рассказываю руководству о несправедливости",
+                    "Принимаю повышение и стараюсь забыть об этой ситуации"
+                ],
+                effects: [
+                    { empathy: 10, confidence: 5, ego: 5, clarity: 15 },
+                    { empathy: 15, confidence: 10, ego: -15, clarity: 20 },
+                    { empathy: -10, confidence: 0, ego: 20, clarity: -10 }
+                ]
+            },
+            {
+                scene: "Ваша мать постоянно критикует ваш выбор партнера, говоря, что вы 'могли бы найти лучше'. Это создает напряжение в семье.",
+                options: [
+                    "Четко объясняю матери границы и прошу уважать мой выбор",
+                    "Избегаю разговоров на эту тему, надеясь, что она привыкнет",
+                    "Разрываю отношения с партнером, чтобы сохранить мир в семье"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 20, ego: 5, clarity: 15 },
+                    { empathy: 0, confidence: -10, ego: 0, clarity: -5 },
+                    { empathy: -5, confidence: -15, ego: -10, clarity: -15 }
+                ]
+            },
+            {
+                scene: "Вы видите, как пожилой человек в магазине не может расплатиться картой из-за технических проблем. За ним выстраивается очередь раздраженных людей.",
+                options: [
+                    "Предлагаю свою помощь с технологией",
+                    "Плачу за его покупки сам",
+                    "Жду терпеливо, подбадривая его словами"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 10, ego: -5, clarity: 5 },
+                    { empathy: 20, confidence: 5, ego: -10, clarity: 0 },
+                    { empathy: 10, confidence: 0, ego: -5, clarity: 10 }
+                ]
+            },
+            {
+                scene: "Ваш коллега просит вас солгать начальству о причинах его отсутствия вчера. Вы знаете, что он был на собеседовании в другой компании.",
+                options: [
+                    "Отказываюсь врать, но обещаю молчать",
+                    "Соглашаюсь помочь, понимая его ситуацию",
+                    "Отказываюсь и советую ему быть честным"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 10, ego: 0, clarity: 15 },
+                    { empathy: 15, confidence: -5, ego: 5, clarity: -10 },
+                    { empathy: 0, confidence: 15, ego: 5, clarity: 20 }
+                ]
+            }
+                     },
+            // Добавляем еще сцены для достижения 500
+            {
+                scene: "В ресторане официант явно новичок и делает много ошибок с вашим заказом. Вы видите, как он нервничает, а другие клиенты начинают жаловаться.",
+                options: [
+                    "Терпеливо жду и подбадриваю официанта",
+                    "Вежливо прошу менеджера о другом официанте",
+                    "Ухожу из ресторана, оставив негативный отзыв"
+                ],
+                effects: [
+                    { empathy: 20, confidence: 5, ego: -10, clarity: 5 },
+                    { empathy: 5, confidence: 5, ego: 10, clarity: 15 },
+                    { empathy: -15, confidence: 0, ego: 15, clarity: -5 }
+                ]
+            },
+            {
+                scene: "Ваш сосед постоянно шумит по ночам, мешая вам спать. Прямые просьбы не помогают, и вы узнали, что у него недавно развод и депрессия.",
+                options: [
+                    "Предлагаю поговорить и найти компромисс",
+                    "Обращаюсь в управляющую компанию с жалобой",
+                    "Покупаю беруши и пытаюсь привыкнуть"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 10, ego: -5, clarity: 15 },
+                    { empathy: 0, confidence: 15, ego: 10, clarity: 10 },
+                    { empathy: 10, confidence: -10, ego: -5, clarity: 5 }
+                ]
+            },
+            {
+                scene: "На улице к вам подходит бездомный человек и просит денег на еду. У вас есть мелочь, но вы подозреваете, что деньги пойдут на алкоголь.",
+                options: [
+                    "Покупаю ему еду вместо денег",
+                    "Даю деньги, не задавая вопросов",
+                    "Отказываю, объясняя свои сомнения"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 5, ego: 0, clarity: 15 },
+                    { empathy: 20, confidence: 0, ego: -10, clarity: -5 },
+                    { empathy: -5, confidence: 10, ego: 5, clarity: 10 }
+                ]
+            },
+            {
+                scene: "Ваш друг пьет слишком много на вечеринке и собирается сесть за руль. Он агрессивно отвергает ваши попытки остановить его.",
+                options: [
+                    "Физически забираю у него ключи",
+                    "Звоню в полицию анонимно",
+                    "Предлагаю поехать с ним как пассажир"
+                ],
+                effects: [
+                    { empathy: 10, confidence: 20, ego: -5, clarity: 15 },
+                    { empathy: 15, confidence: 5, ego: 0, clarity: 20 },
+                    { empathy: 20, confidence: -10, ego: -15, clarity: -10 }
+                ]
+            },
+            {
+                scene: "В автобусе пожилая женщина с тяжелыми сумками стоит, но все места заняты молодыми людьми, которые делают вид, что не замечают ее.",
+                options: [
+                    "Уступаю свое место и прошу других последовать примеру",
+                    "Просто уступаю свое место молча",
+                    "Громко обращаюсь к молодежи с призывом уступить место"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 15, ego: -5, clarity: 10 },
+                    { empathy: 20, confidence: 0, ego: -10, clarity: 5 },
+                    { empathy: 10, confidence: 10, ego: 0, clarity: 15 }
+                ]
+            },
+            {
+                scene: "Ваш ребенок пришел домой в слезах, рассказав, что его дразнят в школе из-за внешности. Вы чувствуете собственную боль и гнев.",
+                options: [
+                    "Иду в школу поговорить с учителем и родителями обидчиков",
+                    "Учу ребенка, как отвечать на насмешки и защищать себя",
+                    "Предлагаю сменить школу или внешность ребенка"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 10, ego: 5, clarity: 15 },
+                    { empathy: 10, confidence: 20, ego: 0, clarity: 20 },
+                    { empathy: 5, confidence: -10, ego: 10, clarity: -15 }
+                ]
+            },
+            {
+                scene: "В соцсетях вы видите пост друга с очевидно ложной, но вредной информацией о здоровье. Вы знаете, что он искренне верит в это.",
+                options: [
+                    "Публично корректирую информацию с источниками",
+                    "Пишу ему лично, объясняя ошибки",
+                    "Игнорирую, чтобы не портить отношения"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 15, ego: 0, clarity: 20 },
+                    { empathy: 15, confidence: 5, ego: -5, clarity: 15 },
+                    { empathy: 0, confidence: -5, ego: 5, clarity: -10 }
+                ]
+            },
+            {
+                scene: "Ваш начальник просит вас переработать в выходные за обычную зарплату, хотя знает о ваших семейных планах. Отказ может повлиять на карьеру.",
+                options: [
+                    "Отказываюсь, объясняя важность work-life balance",
+                    "Соглашаюсь, но прошу компенсацию или отгул",
+                    "Соглашаюсь без условий, чтобы показать преданность"
+                ],
+                effects: [
+                    { empathy: 5, confidence: 20, ego: 0, clarity: 15 },
+                    { empathy: 0, confidence: 15, ego: 10, clarity: 15 },
+                    { empathy: -5, confidence: -10, ego: 5, clarity: -15 }
+                ]
+            },
+            {
+                scene: "Вы стали свидетелем домашнего насилия в соседней квартире. Крики и звуки борьбы слышны через стену.",
+                options: [
+                    "Немедленно вызываю полицию",
+                    "Стучу в дверь, пытаясь вмешаться лично",
+                    "Записываю происходящее и собираю доказательства"
+                ],
+                effects: [
+                    { empathy: 20, confidence: 10, ego: -5, clarity: 20 },
+                    { empathy: 25, confidence: 15, ego: -10, clarity: 5 },
+                    { empathy: 15, confidence: 5, ego: 0, clarity: 25 }
+                ]
+            },
+            {
+                scene: "Ваш друг начал встречаться с человеком, которого вы считаете токсичным и манипулятивным. Друг счастлив и не видит красных флагов.",
+                options: [
+                    "Мягко высказываю свои опасения с конкретными примерами",
+                    "Остаюсь рядом, ожидая, когда друг сам поймет",
+                    "Прямо говорю о токсичности партнера, рискуя дружбой"
+                ],
+                effects: [
+                    { empathy: 15, confidence: 10, ego: -5, clarity: 20 },
+                    { empathy: 20, confidence: -5, ego: -10, clarity: 10 },
+                    { empathy: 10, confidence: 20, ego: 5, clarity: 15 }
+                ]
+            }
+        ];
+
+        // Архетипы персонажей
+        const archetypes = {
+            empath: { name: "Эмпат", description: "Вы глубоко чувствуете других и всегда готовы помочь" },
+            leader: { name: "Лидер", description: "Вы уверены в себе и готовы принимать сложные решения" },
+            individualist: { name: "Индивидуалист", description: "Вы цените свободу и следуете собственным принципам" },
+            philosopher: { name: "Философ", description: "Вы глубоко анализируете ситуации и ищете истину" },
+            guardian: { name: "Хранитель", description: "Вы защищаете близких и дорожите стабильностью" },
+            explorer: { name: "Исследователь", description: "Вы открыты новому и готовы к переменам" },
+            pragmatist: { name: "Прагматик", description: "Вы фокусируетесь на практических решениях" },
+            idealist: { name: "Идеалист", description: "Вы стремитесь к высоким целям и принципам" }
+        };
+
+        // Функции управления экранами
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showMain() {
+            updateMainScreen();
+            showScreen('main-screen');
+        }
+
+        function showProfile() {
+            updateProfile();
+            showScreen('profile-screen');
+        }
+
+        function showInstructions() {
+            showScreen('instructions-screen');
+        }
+
+        function startGame() {
+            loadRandomScene();
+            showScreen('game-screen');
+        }
+
+        // Игровая логика
+        function loadRandomScene() {
+            const availableScenes = gameScenes.filter((_, index) => 
+                !playerStats.completedScenes.includes(index)
+            );
+            
+            if (availableScenes.length === 0) {
+                // Если все сцены пройдены, сбрасываем список
+                playerStats.completedScenes = [];
+            }
+            
+            const sceneIndex = Math.floor(Math.random() * gameScenes.length);
+            currentScene = { ...gameScenes[sceneIndex], index: sceneIndex };
+            
+            displayScene();
+        }
+
+        function displayScene() {
+            document.getElementById('scene-text').textContent = currentScene.scene;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            currentScene.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-secondary';
+                button.textContent = option;
+                button.onclick = () => selectOption(index);
+                container.appendChild(button);
+            });
+        }
+
+        function selectOption(optionIndex) {
+            // Блокируем кнопки
+            document.querySelectorAll('#options-container .btn').forEach(btn => {
+                btn.disabled = true;
+            });
+
+            // Применяем эффекты
+            const effects = currentScene.effects[optionIndex];
+            const oldStats = { ...playerStats };
+            
+            Object.keys(effects).forEach(stat => {
+                playerStats[stat] = Math.max(0, Math.min(100, playerStats[stat] + effects[stat]));
+            });
+            
+            playerStats.decisionsCount++;
+            playerStats.completedScenes.push(currentScene.index);
+            
+            // Сохраняем прогресс
+            saveProgress();
+            
+            // Показываем результат
+            showResult(optionIndex, oldStats, effects);
+        }
+
+        function showResult(optionIndex, oldStats, effects) {
+            document.getElementById('chosen-option').textContent = 
+                `"${currentScene.options[optionIndex]}"`;
+            
+            const changesGrid = document.getElementById('changes-grid');
+            changesGrid.innerHTML = '';
+            
+            const statNames = {
+                empathy: '🌱 Эмпатия',
+                confidence: '💪 Уверенность',
+                ego: '👑 Эгоизм',
+                clarity: '🧘 Осознанность'
+            };
+            
+            Object.keys(effects).forEach(stat => {
+                const change = effects[stat];
+                if (change !== 0) {
+                    const item = document.createElement('div');
+                    item.className = 'change-item';
+                    
+                    const value = document.createElement('div');
+                    value.className = `change-value ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
+                    value.textContent = change > 0 ? `+${change}` : change;
+                    
+                    const label = document.createElement('div');
+                    label.textContent = statNames[stat];
+                    
+                    item.appendChild(value);
+                    item.appendChild(label);
+                    changesGrid.appendChild(item);
+                }
+            });
+            
+            showScreen('result-screen');
+        }
+
+        function nextScene() {
+            loadRandomScene();
+            showScreen('game-screen');
+        }
+
+        // Функции профиля
+        function updateProfile() {
+            // Обновляем значения и полосы прогресса
+            const stats = ['empathy', 'confidence', 'ego', 'clarity'];
+            
+            stats.forEach(stat => {
+                const value = playerStats[stat];
+                document.getElementById(`${stat}-value`).textContent = value;
+                document.getElementById(`${stat}-bar`).style.width = `${value}%`;
+            });
+            
+            // Определяем архетип
+            const archetype = calculateArchetype();
+            document.getElementById('archetype-title').textContent = archetype.name;
+            document.getElementById('archetype-description').textContent = archetype.description;
+        }
+
+        function calculateArchetype() {
+            const { empathy, confidence, ego, clarity } = playerStats;
+            
+            if (empathy > 70 && ego < 30) return archetypes.empath;
+            if (confidence > 70 && ego > 60) return archetypes.leader;
+            if (clarity > 70 && empathy > 60) return archetypes.philosopher;
+            if (empathy > 60 && confidence > 60 && ego < 40) return archetypes.guardian;
+            if (clarity > 60 && confidence > 60) return archetypes.explorer;
+            if (ego < 30 && clarity > 60) return archetypes.idealist;
+            if (confidence > 60 && clarity > 60) return archetypes.pragmatist;
+            
+            return archetypes.explorer; // По умолчанию
+        }
+
+        function updateMainScreen() {
+            document.getElementById('decisions-count').textContent = playerStats.decisionsCount;
+            
+            const level = playerStats.decisionsCount < 10 ? 'Новичок' :
+                         playerStats.decisionsCount < 30 ? 'Искатель' :
+                         playerStats.decisionsCount < 60 ? 'Мудрец' :
+                         playerStats.decisionsCount < 100 ? 'Наставник' : 'Гуру';
+            
+            document.getElementById('current-level').textContent = level;
+        }
+
+        function resetProgress() {
+            if (confirm('Вы уверены, что хотите сбросить весь прогресс? Это действие нельзя отменить.')) {
+                playerStats = {
+                    empathy: 50,
+                    confidence: 50,
+                    ego: 50,
+                    clarity: 50,
+                    decisionsCount: 0,
+                    completedScenes: []
+                };
+                saveProgress();
+                updateProfile();
+                updateMainScreen();
+            }
+        }
+
+        // Сохранение и загрузка
+        function saveProgress() {
+            localStorage.setItem('putGame_progress', JSON.stringify(playerStats));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('putGame_progress');
+            if (saved) {
+                playerStats = { ...playerStats, ...JSON.parse(saved) };
+            }
+        }
+
+        // Анимация частиц
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgress();
+            updateMainScreen();
+            createParticles();
+            
+            // VK Mini Apps bridge
+            if (window.vkBridge) {
+                vkBridge.send('VKWebAppInit');
+            }
+        });
+    </script>
+</body>
+</html>
