@@ -20,6 +20,57 @@
             overflow-x: hidden;
         }
 
+        /* Загрузочный экран */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        body.vk-ready .loading-overlay {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .loading-progress {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
         .container {
             max-width: 400px;
             margin: 0 auto;
@@ -27,6 +78,12 @@
             background: #fff;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        body.vk-ready .container {
+            opacity: 1;
         }
 
         .screen {
@@ -322,7 +379,14 @@
     </style>
 </head>
 <body>
-    <div class="debug-info" id="debug-info">Загрузка...</div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Загрузка приложения...</div>
+            <div class="loading-progress">Пожалуйста, подождите.</div>
+        </div>
+    </div>
+    <div class="debug-info" id="debug-info" style="display: none;">Загрузка...</div>
     <div class="floating-particles" id="particles"></div>
     
     <div class="container">
@@ -475,10 +539,24 @@
     <script>
         // Debug функция
         function debug(message) {
-            console.log(message);
+            console.log('[Путь] ' + message);
+            
             const debugDiv = document.getElementById('debug-info');
             if (debugDiv) {
-                debugDiv.innerHTML = message + '<br>' + debugDiv.innerHTML;
+                // Показываем debug только при ошибках или для разработчиков
+                if (message.includes('❌') || message.includes('ОШИБКА') || 
+                    window.location.hostname === 'localhost' || 
+                    window.location.search.includes('debug=1')) {
+                    debugDiv.style.display = 'block';
+                }
+                
+                debugDiv.innerHTML = new Date().toLocaleTimeString() + ': ' + message + '<br>' + debugDiv.innerHTML;
+                
+                // Ограничиваем количество сообщений
+                const lines = debugDiv.innerHTML.split('<br>');
+                if (lines.length > 10) {
+                    debugDiv.innerHTML = lines.slice(0, 10).join('<br>');
+                }
             }
         }
 
@@ -633,7 +711,7 @@
 
         function showResult(optionIndex, oldStats, effects) {
             document.getElementById('chosen-option').textContent = 
-                "${currentScene.options[optionIndex]}";
+                currentScene.options[optionIndex];
             
             const changesGrid = document.getElementById('changes-grid');
             changesGrid.innerHTML = '';
@@ -652,8 +730,8 @@
                     item.className = 'change-item';
                     
                     const value = document.createElement('div');
-                    value.className = change-value ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'};
-                    value.textContent = change > 0 ? +${change} : change;
+                    value.className = `change-value ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
+                    value.textContent = change > 0 ? `+${change}` : change;
                     
                     const label = document.createElement('div');
                     label.textContent = statNames[stat];
@@ -678,8 +756,8 @@
             
             stats.forEach(stat => {
                 const value = playerStats[stat];
-                document.getElementById(${stat}-value).textContent = value;
-                document.getElementById(${stat}-bar).style.width = ${value}%;
+                document.getElementById(`${stat}-value`).textContent = value;
+                document.getElementById(`${stat}-bar`).style.width = `${value}%`;
             });
             
             const archetype = calculateArchetype();
@@ -775,48 +853,109 @@
             }
         }
 
-        // Инициализация VK Bridge
+        // Инициализация VK Bridge с таймаутом
         function initVKBridge() {
             debug('Инициализация VK Bridge...');
             
+            // Устанавливаем таймаут для предотвращения вечной загрузки
+            const loadingTimeout = setTimeout(() => {
+                debug('Таймаут загрузки (5 сек), принудительно запускаем приложение');
+                finishLoading();
+            }, 5000);
+            
             if (window.vkBridge) {
-                debug('VK Bridge найден');
+                debug('VK Bridge найден, начинаем инициализацию');
                 try {
                     vkBridge.send('VKWebAppInit')
-                        .then(() => {
+                        .then((data) => {
                             debug('VK Bridge успешно инициализирован');
+                            clearTimeout(loadingTimeout);
+                            finishLoading();
                         })
                         .catch((error) => {
                             debug('Ошибка VK Bridge: ' + error.message);
+                            clearTimeout(loadingTimeout);
+                            finishLoading();
                         });
                 } catch (e) {
                     debug('Ошибка при вызове VK Bridge: ' + e.message);
+                    clearTimeout(loadingTimeout);
+                    finishLoading();
                 }
             } else {
                 debug('VK Bridge не найден - работаем без него');
+                clearTimeout(loadingTimeout);
+                finishLoading();
+            }
+        }
+
+        // Функция завершения загрузки
+        function finishLoading() {
+            debug('Завершаем загрузку приложения');
+            document.body.classList.add('vk-ready');
+            
+            // Скрываем загрузочный экран с анимацией
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                loadingOverlay.style.visibility = 'hidden';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }
+        }
+
+        // Проверка готовности приложения
+        function checkAppReady() {
+            try {
+                // Проверяем наличие основных функций
+                if (typeof loadProgress !== 'function' || 
+                    typeof updateMainScreen !== 'function' ||
+                    !document.getElementById('main-screen') ||
+                    !document.getElementById('game-screen')) {
+                    throw new Error('Приложение не готово - отсутствуют ключевые элементы');
+                }
+                
+                debug('Проверка готовности приложения: ✅ Пройдена');
+                return true;
+            } catch (error) {
+                debug('Проверка готовности приложения: ❌ ' + error.message);
+                return false;
             }
         }
 
         // Главная инициализация
         function init() {
-            debug('Инициализация приложения...');
+            debug('DOM загружен, начинаем инициализацию приложения');
             
             try {
+                // Проверяем готовность приложения
+                if (!checkAppReady()) {
+                    debug('Приложение не готово, повторяем через 100мс');
+                    setTimeout(init, 100);
+                    return;
+                }
+                
+                debug('Загружаем прогресс...');
                 loadProgress();
+                
+                debug('Обновляем главный экран...');
                 updateMainScreen();
+                
+                debug('Создаем частицы...');
                 createParticles();
+                
+                debug('Инициализируем VK Bridge...');
                 initVKBridge();
                 
-                debug('Приложение успешно инициализировано!');
-                
-                // Скрываем debug через 5 секунд
-                setTimeout(() => {
-                    const debugDiv = document.getElementById('debug-info');
-                    if (debugDiv) debugDiv.style.display = 'none';
-                }, 5000);
+                debug('✅ Приложение успешно инициализировано!');
                 
             } catch (e) {
-                debug('КРИТИЧЕСКАЯ ОШИБКА: ' + e.message);
+                debug('❌ КРИТИЧЕСКАЯ ОШИБКА: ' + e.message);
+                // В случае критической ошибки принудительно запускаем приложение
+                setTimeout(() => {
+                    finishLoading();
+                }, 1000);
             }
         }
 
