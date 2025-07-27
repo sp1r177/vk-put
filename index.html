@@ -2,7 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Путь - Игра выборов</title>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
@@ -27,6 +30,47 @@
             background: #fff;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+        }
+
+        /* Загрузочный экран */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        body.vk-ready .loading-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
         }
 
         .screen {
@@ -308,6 +352,14 @@
     </style>
 </head>
 <body>
+    <!-- Загрузочный экран -->
+    <div class="loading-overlay">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Загрузка игры...</div>
+        </div>
+    </div>
+
     <div class="floating-particles" id="particles"></div>
     
     <div class="container">
@@ -960,15 +1012,94 @@
             }
         }
 
+        // Инициализация VK Bridge
+        function initVKBridge() {
+            // Таймаут для предотвращения вечной загрузки
+            const loadingTimeout = setTimeout(() => {
+                console.log('Таймаут загрузки, принудительно запускаем приложение');
+                document.body.classList.add('vk-ready');
+            }, 5000); // 5 секунд максимум на загрузку
+
+            if (window.vkBridge) {
+                console.log('VK Bridge найден, начинаем инициализацию');
+                
+                // Инициализация VK Bridge
+                vkBridge.send('VKWebAppInit')
+                    .then((data) => {
+                        console.log('VK Bridge инициализирован:', data);
+                        clearTimeout(loadingTimeout);
+                        
+                        // Приложение готово к работе
+                        document.body.classList.add('vk-ready');
+                        
+                        // Опционально получаем информацию о пользователе
+                        return vkBridge.send('VKWebAppGetUserInfo').catch(err => {
+                            console.log('Не удалось получить информацию о пользователе:', err);
+                            return null;
+                        });
+                    })
+                    .then((userInfo) => {
+                        if (userInfo) {
+                            console.log('Информация о пользователе:', userInfo);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log('Ошибка VK Bridge:', error);
+                        clearTimeout(loadingTimeout);
+                        // Продолжаем работу без VK API
+                        document.body.classList.add('vk-ready');
+                    });
+            } else {
+                console.log('VK Bridge не найден, работаем в обычном режиме');
+                clearTimeout(loadingTimeout);
+                document.body.classList.add('vk-ready');
+            }
+        }
+
+        // Проверка готовности приложения
+        function checkAppReady() {
+            try {
+                // Проверяем, что все необходимые функции определены
+                if (typeof loadProgress !== 'function' || 
+                    typeof updateMainScreen !== 'function' || 
+                    typeof createParticles !== 'function') {
+                    throw new Error('Не все функции приложения загружены');
+                }
+                
+                // Проверяем, что DOM элементы существуют
+                if (!document.getElementById('main-screen') || 
+                    !document.getElementById('particles')) {
+                    throw new Error('Не все DOM элементы найдены');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Ошибка проверки готовности приложения:', error);
+                return false;
+            }
+        }
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            loadProgress();
-            updateMainScreen();
-            createParticles();
+            console.log('DOM загружен, начинаем инициализацию приложения');
             
-            // VK Mini Apps bridge
-            if (window.vkBridge) {
-                vkBridge.send('VKWebAppInit');
+            // Проверяем готовность приложения
+            if (!checkAppReady()) {
+                console.error('Приложение не готово к запуску');
+                return;
+            }
+            
+            try {
+                loadProgress();
+                updateMainScreen();
+                createParticles();
+                
+                // Инициализируем VK Bridge
+                initVKBridge();
+            } catch (error) {
+                console.error('Ошибка при инициализации приложения:', error);
+                // Принудительно показываем приложение даже при ошибках
+                document.body.classList.add('vk-ready');
             }
         });
     </script>
