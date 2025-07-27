@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моральный выбор - Презентация для конкурса</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease-in-out;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slide-subtitle {
+            font-size: 2rem;
+            color: #e0e0e0;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            font-size: 1.4rem;
+            color: #fff;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        .slide-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .slide-list li {
+            margin: 15px 0;
+            font-size: 1.3rem;
+        }
+
+        .highlight {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
+
+        .mission-statement {
+            background: linear-gradient(45deg, rgba(255,215,0,0.2), rgba(255,107,53,0.2));
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,215,0,0.3);
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #FFD700, #FF6B35);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,215,0,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+            
+            .slide-title {
+                font-size: 2.5rem;
+            }
+            
+            .slide-subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .slide-content {
+                font-size: 1.1rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Слайд 1: Заголовок -->
+        <div class="slide active" id="slide1">
+            <div class="slide-title">🎯 МОРАЛЬНЫЙ ВЫБОР</div>
+            <div class="slide-subtitle">Игра, которая меняет жизни</div>
+            <div class="slide-content">
+                <div class="mission-statement">
+                    <strong>Представьте, что у вас есть возможность тренировать свою моральную интуицию так же, как мы тренируем мышцы в спортзале...</strong>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
+                    Тренажер для души • Моральные поединки • Развитие человечности
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 2: Проблема -->
+        <div class="slide" id="slide2">
+            <div class="slide-title">🤔 ПРОБЛЕМА</div>
+            <div class="slide-content">
+                <p style="font-size: 1.5rem; margin-bottom: 30px;">В современном мире мы сталкиваемся с моральными дилеммами каждый день:</p>
+                <div class="slide-list">
+                    <ul>
+                        <li><span class="emoji">🤔</span>Сложные этические решения</li>
+                        <li><span class="emoji">😰</span>Стресс от неправильного выбора</li>
+                        <li><span class="emoji">😔</span>Сожаление о принятых решениях</li>
+                        <li><span class="emoji">😤</span>Конфликты с окружающими</li>
+                    </ul>
+                </div>
+                <p style="font-size: 1.3rem; margin-top: 30px; color: #FFD700;">
+                    <strong>Но где мы можем безопасно тренировать свою моральную интуицию?</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 3: Наше решение -->
+        <div class="slide" id="slide3">
+            <div class="slide-title">💡 НАШЕ РЕШЕНИЕ</div>
+            <div class="slide-subtitle">"Моральный выбор" — тренажер для души</div>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🎮</div>
+                    <div class="feature-title">500+ уникальных дилемм</div>
+                    <div class="feature-desc">От бытовых ситуаций до глобальных проблем</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚔️</div>
+                    <div class="feature-title">PvP дуэли</div>
+                    <div class="feature-desc">Моральные поединки с другими игроками</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-title">Система рейтингов</div>
+                    <div class="feature-desc">Соревнование за звание самого этичного</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏰</div>
+                    <div class="feature-title">Гильдии</div>
+                    <div class="feature-desc">Сообщества единомышленников</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 4: Уникальные механики -->
+        <div class="slide" id="slide4">
+            <div class="slide-title">⚙️ УНИКАЛЬНЫЕ МЕХАНИКИ</div>
+            <div class="slide-content">
+                <div class="feature-item" style="margin-bottom: 30px;">
+                    <div class="feature-icon">🧠</div>
+                    <div class="feature-title">Многоуровневая оценка</div>
+                    <div class="feature-desc">Игра анализирует не только ЧТО вы выбрали, но и КАК и КАК БЫСТРО вы приняли решение</div>
+                </div>
+                <div class="feature-item" style="margin-bottom: 30px;">
+                    <div class="feature-icon">⚔️</div>
+                    <div class="feature-title">PvP Дуэли</div>
+                    <div class="feature-desc">10 вопросов за дуэль, анимированные бои, система рейтингов</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Система ограничений</div>
+                    <div class="feature-desc">20 вопросов в день — предотвращает выгорание, поддерживает качество</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 5: Почему долго играют -->
+        <div class="slide" id="slide5">
+            <div class="slide-title">🎯 ПОЧЕМУ ЛЮДИ БУДУТ ИГРАТЬ ДОЛГО?</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🧠</div>
+                        <div class="feature-title">Психологические триггеры</div>
+                        <div class="feature-desc">
+                            • Когнитивный диссонанс<br>
+                            • Эффект "якоря"<br>
+                            • Социальное сравнение
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎮</div>
+                        <div class="feature-title">Геймификация</div>
+                        <div class="feature-desc">
+                            • Система достижений<br>
+                            • Прогрессия персонажа<br>
+                            • Коллекционирование
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🌍</div>
+                        <div class="feature-title">Социальность</div>
+                        <div class="feature-desc">
+                            • PvP дуэли с друзьями<br>
+                            • Обсуждения решений<br>
+                            • Гильдии по интересам
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <div class="feature-title">Постоянное развитие</div>
+                        <div class="feature-desc">
+                            • Новые сценарии<br>
+                            • Сезонные события<br>
+                            • Адаптивная сложность
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 6: Эмоциональный отклик -->
+        <div class="slide" id="slide6">
+            <div class="slide-title">🎭 ЭМОЦИОНАЛЬНЫЙ ОТКЛИК</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">😊</div>
+                        <div class="feature-title">Положительные эмоции</div>
+                        <div class="feature-desc">
+                            • Гордость за правильные решения<br>
+                            • Радость от побед в дуэлях<br>
+                            • Удовлетворение от развития<br>
+                            • Вдохновение от сообщества
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💪</div>
+                        <div class="feature-title">Личностный рост</div>
+                        <div class="feature-desc">
+                            • Уверенность в моральных принципах<br>
+                            • Эмпатия к другим точкам зрения<br>
+                            • Решительность в сложных ситуациях
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 7: Технические преимущества -->
+        <div class="slide" id="slide7">
+            <div class="slide-title">🚀 ТЕХНИЧЕСКИЕ ПРЕИМУЩЕСТВА</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-title">VK Mini Apps</div>
+                        <div class="feature-desc">Интеграция с крупнейшей соцсетью России</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Современный UI/UX</div>
+                        <div class="feature-desc">Интуитивный и красивый интерфейс</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔧</div>
+                        <div class="feature-title">Надежность</div>
+                        <div class="feature-desc">Стабильная работа, быстрая загрузка</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Аналитика</div>
+                        <div class="feature-desc">Глубокое понимание поведения игроков</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 8: Метрики успеха -->
+        <div class="slide" id="slide8">
+            <div class="slide-title">📊 МЕТРИКИ УСПЕХА</div>
+            <div class="slide-content">
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">65%</div>
+                        <div class="stat-label">D1 Retention</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">45%</div>
+                        <div class="stat-label">D7 Retention</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">30%</div>
+                        <div class="stat-label">D30 Retention</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">$2.5</div>
+                        <div class="stat-label">ARPU</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
+                    Высокая вовлеченность с первого дня • Стабильная аудитория • Долгосрочная лояльность
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 9: Наша миссия -->
+        <div class="slide" id="slide9">
+            <div class="slide-title">🌟 НАША МИССИЯ</div>
+            <div class="slide-content">
+                <div class="mission-statement">
+                    <strong>Мы создаем не просто игру, а инструмент для развития человечности.</strong>
+                </div>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🧠</div>
+                        <div class="feature-title">Развитие критического мышления</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💝</div>
+                        <div class="feature-title">Обучение эмпатии</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-title">Мотивация к самосовершенствованию</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🌍</div>
+                        <div class="feature-title">Объединение вокруг ценностей</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; color: #FFD700;">
+                    <strong>В мире, где моральные дилеммы становятся все сложнее, наша игра дает людям безопасное пространство для тренировки своей моральной интуиции.</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 10: Призыв к действию -->
+        <div class="slide" id="slide10">
+            <div class="slide-title">🏆 ПРИЗЫВ К ДЕЙСТВИЮ</div>
+            <div class="slide-content">
+                <div class="mission-statement">
+                    <strong style="font-size: 2rem;">Присоединяйтесь к нам в создании мира, где каждый выбор делает нас лучше!</strong>
+                </div>
+                <p style="font-size: 1.5rem; margin: 30px 0; color: #FFD700;">
+                    "Моральный выбор" — игра, которая меняет не только игроков, но и мир вокруг нас.
+                </p>
+                <button class="cta-button" onclick="alert('Спасибо за внимание!')">
+                    🚀 НАЧАТЬ ПУТЕШЕСТВИЕ
+                </button>
+                <p style="font-size: 1rem; margin-top: 30px; opacity: 0.8; font-style: italic;">
+                    Создано с ❤️ для развития человечности в каждом из нас
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Назад</button>
+        <button class="nav-btn" onclick="nextSlide()">Вперед →</button>
+    </div>
+
+    <!-- Счетчик слайдов -->
+    <div class="slide-counter">
+        <span id="currentSlide">1</span> / <span id="totalSlides">10</span>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(index) {
+            // Скрываем все слайды
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            // Показываем текущий слайд
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        // Управление клавиатурой
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Автоматическое переключение каждые 10 секунд (опционально)
+        // setInterval(nextSlide, 10000);
+
+        // Инициализация
+        showSlide(0);
+    </script>
+</body>
+</html> 
