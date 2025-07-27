@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <script src="additional-scenes.js"></script>
     <script src="game-systems.js"></script>
+    <script src="vk-integration.js"></script>
     <style>
         * {
             margin: 0;
@@ -734,6 +735,107 @@
             transition: width 0.5s ease;
         }
 
+        /* Список друзей */
+        .friends-section {
+            background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,255,136,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #00A2FF;
+        }
+
+        .friends-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00A2FF;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 8px 0;
+            border: 1px solid rgba(0,162,255,0.2);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00A2FF, #00FF88);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .friend-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .friend-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-btn {
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            color: white;
+        }
+
+        .challenge-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(255,69,0,0.3);
+        }
+
+        .invite-btn {
+            background: linear-gradient(45deg, #00A2FF, #00FF88);
+            color: white;
+        }
+
+        .invite-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(0,162,255,0.3);
+        }
+
+        .app-user {
+            border-color: #00FF88;
+            background: rgba(0,255,136,0.1);
+        }
+
+        .non-app-user {
+            border-color: #FFA500;
+            background: rgba(255,165,0,0.1);
+        }
+
         /* Адаптивность */
         @media (max-width: 768px) {
             .player-stats {
@@ -959,6 +1061,18 @@
                 <p>Сброс через: <span id="reset-timer">00:00:00</span></p>
             </div>
 
+            <!-- Список друзей -->
+            <div class="friends-section" id="friends-section" style="display: none;">
+                <div class="friends-header">👥 Ваши друзья</div>
+                <div id="friends-list"></div>
+            </div>
+
+            <!-- Активные вызовы -->
+            <div class="friends-section" id="challenges-section" style="display: none;">
+                <div class="friends-header">⚔️ Активные вызовы</div>
+                <div id="challenges-list"></div>
+            </div>
+
             <div class="pvp-arena" id="pvp-arena" style="display: none;">
                 <div class="battle-animation">⚔️</div>
                 <h2 style="text-align: center; color: #FFD700; margin-bottom: 20px;">⚔️ МОРАЛЬНАЯ ДУЭЛЬ ⚔️</h2>
@@ -983,14 +1097,14 @@
 
             <div class="scene-container">
                 <div class="scene-text">
-                    🎯 <strong>PvP Дуэли</strong> - Бросайте вызовы другим игрокам в моральных поединках! 
+                    🎯 <strong>PvP Дуэли с друзьями VK</strong> - Бросайте вызовы своим друзьям в моральных поединках! 
                     В дуэли 10 сложных вопросов, где каждый ответ оценивается по логике и скорости.
                 </div>
                 <div class="options-container">
-                    <button class="option-btn" onclick="showPvPChallenge()">
-                        🚀 Бросить вызов
+                    <button class="option-btn" onclick="loadFriendsList()">
+                        👥 Показать друзей
                     </button>
-                    <button class="option-btn" onclick="showPvPChallenges()">
+                    <button class="option-btn" onclick="showActiveChallenges()">
                         📋 Активные вызовы
                     </button>
                     <button class="option-btn" onclick="showPvPHistory()">
@@ -1061,7 +1175,7 @@
         };
 
         // Инициализация игровых систем
-        let pvpSystem, tournamentSystem, guildSystem, limitationSystem;
+        let pvpSystem, tournamentSystem, guildSystem, limitationSystem, vkIntegration;
 
         // Сцены игры
         const gameScenes = [
@@ -1377,11 +1491,74 @@
         // Автосохранение каждые 30 секунд
         setInterval(saveGame, 30000);
 
-        // === PvP ФУНКЦИИ ===
-        function showPvPChallenge() {
-            const targetName = prompt("Введите имя игрока для вызова:");
-            if (!targetName) return;
+        // === PvP ФУНКЦИИ С VK ИНТЕГРАЦИЕЙ ===
+        function loadFriendsList() {
+            if (!vkIntegration || !vkIntegration.currentUser) {
+                alert("VK интеграция не загружена. Попробуйте обновить страницу.");
+                return;
+            }
+
+            const friendsSection = document.getElementById('friends-section');
+            const friendsList = document.getElementById('friends-list');
             
+            // Получаем друзей в приложении и не в приложении
+            const appFriends = vkIntegration.getAppFriends();
+            const nonAppFriends = vkIntegration.getNonAppFriends();
+            
+            let html = '';
+            
+            // Показываем друзей в приложении
+            if (appFriends.length > 0) {
+                html += '<h4 style="color: #00FF88; margin: 15px 0 10px 0;">✅ В приложении</h4>';
+                appFriends.forEach(friend => {
+                    html += createFriendItem(friend, true);
+                });
+            }
+            
+            // Показываем друзей не в приложении
+            if (nonAppFriends.length > 0) {
+                html += '<h4 style="color: #FFA500; margin: 15px 0 10px 0;">📱 Не в приложении</h4>';
+                nonAppFriends.forEach(friend => {
+                    html += createFriendItem(friend, false);
+                });
+            }
+            
+            if (html === '') {
+                html = '<p style="text-align: center; opacity: 0.7;">Друзья не найдены</p>';
+            }
+            
+            friendsList.innerHTML = html;
+            friendsSection.style.display = 'block';
+            
+            // Скрываем другие секции
+            document.getElementById('challenges-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+        }
+
+        function createFriendItem(friend, isInApp) {
+            const statusClass = isInApp ? 'app-user' : 'non-app-user';
+            const statusText = isInApp ? 'В приложении' : 'Не в приложении';
+            const actionButton = isInApp ? 
+                `<button class="friend-btn challenge-btn" onclick="challengeFriend(${friend.id})">⚔️ Вызов</button>` :
+                `<button class="friend-btn invite-btn" onclick="inviteFriend(${friend.id})">📱 Пригласить</button>`;
+            
+            return `
+                <div class="friend-item ${statusClass}">
+                    <div class="friend-info">
+                        <div class="friend-avatar">${friend.first_name.charAt(0)}${friend.last_name.charAt(0)}</div>
+                        <div>
+                            <div class="friend-name">${friend.first_name} ${friend.last_name}</div>
+                            <div class="friend-status">${statusText}</div>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        ${actionButton}
+                    </div>
+                </div>
+            `;
+        }
+
+        function challengeFriend(friendId) {
             const bet = parseInt(prompt("Введите ставку XP (от 50 до 500):")) || 100;
             if (bet < 50 || bet > 500) {
                 alert("Ставка должна быть от 50 до 500 XP");
@@ -1393,28 +1570,84 @@
                 return;
             }
             
-            const challenge = pvpSystem.createChallenge(gameData.player.name, targetName, bet);
-            alert(`Вызов отправлен игроку ${targetName} со ставкой ${bet} XP!`);
+            vkIntegration.sendDuelChallenge(friendId, bet).then(challenge => {
+                if (challenge) {
+                    alert(`Вызов отправлен другу! В реальном приложении он получит уведомление.`);
+                } else {
+                    alert("Ошибка отправки вызова");
+                }
+            });
         }
 
-        function showPvPChallenges() {
-            const challenges = pvpSystem.duelQueue.filter(c => c.target === gameData.player.name);
-            if (challenges.length === 0) {
-                alert("У вас нет активных вызовов");
+        function inviteFriend(friendId) {
+            vkIntegration.inviteFriend(friendId).then(success => {
+                if (success) {
+                    alert("Приглашение отправлено!");
+                } else {
+                    alert("Ошибка отправки приглашения");
+                }
+            });
+        }
+
+        function showActiveChallenges() {
+            if (!vkIntegration || !vkIntegration.currentUser) {
+                alert("VK интеграция не загружена. Попробуйте обновить страницу.");
                 return;
             }
+
+            const challengesSection = document.getElementById('challenges-section');
+            const challengesList = document.getElementById('challenges-list');
             
-            let message = "Активные вызовы:\n";
-            challenges.forEach((challenge, index) => {
-                message += `${index + 1}. ${challenge.challenger} - ${challenge.bet} XP\n`;
-            });
+            const challenges = vkIntegration.getActiveChallenges();
             
-            const choice = prompt(message + "\nВведите номер вызова для принятия (или 0 для отмены):");
-            if (choice && choice !== "0") {
-                const challengeIndex = parseInt(choice) - 1;
-                if (challengeIndex >= 0 && challengeIndex < challenges.length) {
-                    acceptPvPChallenge(challenges[challengeIndex].id);
+            if (challenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">У вас нет активных вызовов</p>';
+            } else {
+                let html = '';
+                challenges.forEach(challenge => {
+                    html += `
+                        <div class="friend-item app-user">
+                            <div class="friend-info">
+                                <div class="friend-avatar">${challenge.challengerName.split(' ').map(n => n.charAt(0)).join('')}</div>
+                                <div>
+                                    <div class="friend-name">${challenge.challengerName}</div>
+                                    <div class="friend-status">Ставка: ${challenge.bet} XP</div>
+                                </div>
+                            </div>
+                            <div class="friend-actions">
+                                <button class="friend-btn challenge-btn" onclick="acceptChallenge(${challenge.id})">✅ Принять</button>
+                                <button class="friend-btn invite-btn" onclick="declineChallenge(${challenge.id})">❌ Отклонить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                challengesList.innerHTML = html;
+            }
+            
+            challengesSection.style.display = 'block';
+            
+            // Скрываем другие секции
+            document.getElementById('friends-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+        }
+
+        function acceptChallenge(challengeId) {
+            const challenge = vkIntegration.acceptChallenge(challengeId);
+            if (challenge) {
+                // Создаем дуэль в PvP системе
+                const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
+                if (duel) {
+                    gameData.currentDuel = duel;
+                    startPvPDuel(duel);
                 }
+            }
+        }
+
+        function declineChallenge(challengeId) {
+            const success = vkIntegration.declineChallenge(challengeId);
+            if (success) {
+                alert("Вызов отклонен");
+                showActiveChallenges(); // Обновляем список
             }
         }
 
@@ -1497,7 +1730,16 @@
                 gameData.player.xp = Math.max(0, gameData.player.xp - result.bet);
             }
             
-            alert(message);
+            // Показываем результат
+            const resultMessage = message + '\n\nХотите поделиться результатом?';
+            if (confirm(resultMessage)) {
+                vkIntegration.shareDuelResult({
+                    isWinner: isWinner,
+                    bet: result.bet,
+                    opponent: isWinner ? result.loser : result.winner
+                });
+            }
+            
             document.getElementById('pvp-arena').style.display = 'none';
             gameData.currentDuel = null;
             updatePlayerUI();
@@ -1676,6 +1918,7 @@
             tournamentSystem = new GameSystems.TournamentSystem();
             guildSystem = new GameSystems.GuildSystem();
             limitationSystem = new GameSystems.LimitationSystem();
+            vkIntegration = new VKIntegration();
             
             // Обновляем UI
             updateGuildUI();
