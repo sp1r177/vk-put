@@ -1,0 +1,3 @@
+Epic RPG Version 2.0
+Updated: 2024-12-27
+Features: Bosses, Guilds, Tournaments, Achievements, XP System
