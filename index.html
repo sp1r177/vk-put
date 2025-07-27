@@ -356,7 +356,8 @@
     <div class="loading-overlay">
         <div>
             <div class="loading-spinner"></div>
-            <div class="loading-text">Загрузка игры...</div>
+            <div class="loading-text" id="loading-text">Загрузка игры...</div>
+            <div id="debug-info" style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.7); text-align: center; max-width: 300px;"></div>
         </div>
     </div>
 
@@ -1012,94 +1013,165 @@
             }
         }
 
-        // Инициализация VK Bridge
-        function initVKBridge() {
-            // Таймаут для предотвращения вечной загрузки
-            const loadingTimeout = setTimeout(() => {
-                console.log('Таймаут загрузки, принудительно запускаем приложение');
-                document.body.classList.add('vk-ready');
-            }, 5000); // 5 секунд максимум на загрузку
-
-            if (window.vkBridge) {
-                console.log('VK Bridge найден, начинаем инициализацию');
-                
-                // Инициализация VK Bridge
-                vkBridge.send('VKWebAppInit')
-                    .then((data) => {
-                        console.log('VK Bridge инициализирован:', data);
-                        clearTimeout(loadingTimeout);
-                        
-                        // Приложение готово к работе
-                        document.body.classList.add('vk-ready');
-                        
-                        // Опционально получаем информацию о пользователе
-                        return vkBridge.send('VKWebAppGetUserInfo').catch(err => {
-                            console.log('Не удалось получить информацию о пользователе:', err);
-                            return null;
-                        });
-                    })
-                    .then((userInfo) => {
-                        if (userInfo) {
-                            console.log('Информация о пользователе:', userInfo);
-                        }
-                    })
-                    .catch((error) => {
-                        console.log('Ошибка VK Bridge:', error);
-                        clearTimeout(loadingTimeout);
-                        // Продолжаем работу без VK API
-                        document.body.classList.add('vk-ready');
-                    });
-            } else {
-                console.log('VK Bridge не найден, работаем в обычном режиме');
-                clearTimeout(loadingTimeout);
-                document.body.classList.add('vk-ready');
+        // Debug функции
+        function updateLoadingText(text) {
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText) loadingText.textContent = text;
+        }
+        
+        function addDebugInfo(text) {
+            const debugInfo = document.getElementById('debug-info');
+            if (debugInfo) {
+                debugInfo.innerHTML += text + '<br>';
             }
         }
 
-        // Проверка готовности приложения
+        // Принудительный запуск приложения (для отладки)
+        function forceStartApp() {
+            console.log('🚀 Принудительный запуск приложения');
+            updateLoadingText('Запуск приложения...');
+            addDebugInfo('✅ Запуск приложения');
+            
+            document.body.classList.add('vk-ready');
+            
+            // Дополнительно убираем загрузочный экран
+            setTimeout(() => {
+                const loadingOverlay = document.querySelector('.loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        // Инициализация VK Bridge для GitHub Pages
+        function initVKBridge() {
+            console.log('🔄 Начинаем инициализацию VK Bridge...');
+            updateLoadingText('Инициализация VK Bridge...');
+            addDebugInfo('🔄 Начинаем инициализацию VK');
+            
+            // Агрессивный таймаут - 2 секунды максимум
+            const quickTimeout = setTimeout(() => {
+                console.log('⚡ Быстрый таймаут - запускаем приложение немедленно');
+                addDebugInfo('⚡ Таймаут - принудительный старт');
+                forceStartApp();
+            }, 2000);
+
+            // Дополнительный таймаут на случай проблем
+            const fallbackTimeout = setTimeout(() => {
+                console.log('🔧 Fallback таймаут - принудительный запуск');
+                addDebugInfo('🔧 Fallback таймаут');
+                forceStartApp();
+            }, 1000);
+
+            // Проверяем среду выполнения
+            const isInVK = window.location.href.includes('vk.com') || 
+                          window.parent !== window || 
+                          window.opener !== null;
+            
+            const envText = isInVK ? 'VK' : 'Внешний браузер';
+            console.log('🌍 Среда выполнения:', envText);
+            addDebugInfo('🌍 Среда: ' + envText);
+
+            if (window.vkBridge && isInVK) {
+                console.log('✅ VK Bridge найден в VK среде');
+                addDebugInfo('✅ VK Bridge найден');
+                
+                try {
+                    // Упрощенная инициализация без ожидания ответа
+                    vkBridge.send('VKWebAppInit');
+                    console.log('📤 VKWebAppInit отправлен');
+                    addDebugInfo('📤 VKWebAppInit отправлен');
+                    
+                    // Не ждем ответа, сразу запускаем
+                    clearTimeout(quickTimeout);
+                    clearTimeout(fallbackTimeout);
+                    forceStartApp();
+                    
+                } catch (error) {
+                    console.log('❌ Ошибка VK Bridge:', error);
+                    addDebugInfo('❌ Ошибка VK Bridge');
+                    clearTimeout(quickTimeout);
+                    clearTimeout(fallbackTimeout);
+                    forceStartApp();
+                }
+            } else {
+                console.log('🌐 Работаем без VK Bridge');
+                addDebugInfo('🌐 Без VK Bridge');
+                clearTimeout(quickTimeout);
+                clearTimeout(fallbackTimeout);
+                forceStartApp();
+            }
+        }
+
+        // Упрощенная проверка готовности приложения
         function checkAppReady() {
             try {
-                // Проверяем, что все необходимые функции определены
-                if (typeof loadProgress !== 'function' || 
-                    typeof updateMainScreen !== 'function' || 
-                    typeof createParticles !== 'function') {
-                    throw new Error('Не все функции приложения загружены');
+                // Проверяем только основные элементы
+                const mainScreen = document.getElementById('main-screen');
+                if (!mainScreen) {
+                    console.warn('⚠️ Главный экран не найден, но продолжаем');
                 }
                 
-                // Проверяем, что DOM элементы существуют
-                if (!document.getElementById('main-screen') || 
-                    !document.getElementById('particles')) {
-                    throw new Error('Не все DOM элементы найдены');
-                }
-                
+                console.log('✅ Базовая проверка пройдена');
                 return true;
             } catch (error) {
-                console.error('Ошибка проверки готовности приложения:', error);
-                return false;
+                console.warn('⚠️ Проблема при проверке, но продолжаем:', error);
+                return true; // Все равно продолжаем
             }
         }
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, начинаем инициализацию приложения');
-            
-            // Проверяем готовность приложения
-            if (!checkAppReady()) {
-                console.error('Приложение не готово к запуску');
-                return;
-            }
+        // Безопасная инициализация функций
+        function safeInit() {
+            try {
+                if (typeof loadProgress === 'function') {
+                    loadProgress();
+                    console.log('✅ Прогресс загружен');
+                }
+            } catch (e) { console.warn('⚠️ Ошибка loadProgress:', e); }
             
             try {
-                loadProgress();
-                updateMainScreen();
-                createParticles();
-                
-                // Инициализируем VK Bridge
-                initVKBridge();
-            } catch (error) {
-                console.error('Ошибка при инициализации приложения:', error);
-                // Принудительно показываем приложение даже при ошибках
-                document.body.classList.add('vk-ready');
+                if (typeof updateMainScreen === 'function') {
+                    updateMainScreen();
+                    console.log('✅ Главный экран обновлен');
+                }
+            } catch (e) { console.warn('⚠️ Ошибка updateMainScreen:', e); }
+            
+            try {
+                if (typeof createParticles === 'function') {
+                    createParticles();
+                    console.log('✅ Частицы созданы');
+                }
+            } catch (e) { console.warn('⚠️ Ошибка createParticles:', e); }
+        }
+
+        // Главная инициализация
+        function mainInit() {
+            console.log('🚀 Начинаем главную инициализацию');
+            updateLoadingText('Инициализация приложения...');
+            addDebugInfo('🚀 Главная инициализация');
+            
+            checkAppReady();
+            safeInit();
+            initVKBridge();
+        }
+
+        // Множественные точки входа для надежности
+        document.addEventListener('DOMContentLoaded', mainInit);
+        
+        // Fallback если DOMContentLoaded уже прошел
+        if (document.readyState === 'loading') {
+            console.log('📄 DOM загружается...');
+        } else {
+            console.log('📄 DOM уже готов, запускаем немедленно');
+            setTimeout(mainInit, 100);
+        }
+        
+        // Дополнительный fallback
+        window.addEventListener('load', function() {
+            console.log('🌍 Window load завершен');
+            if (!document.body.classList.contains('vk-ready')) {
+                console.log('🔧 Принудительный запуск через window.load');
+                setTimeout(forceStartApp, 500);
             }
         });
     </script>
