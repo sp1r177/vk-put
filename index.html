@@ -305,21 +305,9 @@
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(180deg); }
         }
-        #loader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; color: #667eea;
-            z-index: 10000;
-}
-#app { display: none; }  
     </style>
 </head>
 <body>
-    <div id="loader">Инициализация приложения...</div>
-<div id="app">
     <div class="floating-particles" id="particles"></div>
     
     <div class="container">
@@ -845,7 +833,7 @@
 
         function showResult(optionIndex, oldStats, effects) {
             document.getElementById('chosen-option').textContent = 
-                `"${currentScene.options[optionIndex]}"`;
+                "${currentScene.options[optionIndex]}";
             
             const changesGrid = document.getElementById('changes-grid');
             changesGrid.innerHTML = '';
@@ -864,8 +852,8 @@
                     item.className = 'change-item';
                     
                     const value = document.createElement('div');
-                    value.className = `change-value ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}`;
-                    value.textContent = change > 0 ? `+${change}` : change;
+                    value.className = change-value ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'};
+                    value.textContent = change > 0 ? +${change} : change;
                     
                     const label = document.createElement('div');
                     label.textContent = statNames[stat];
@@ -891,8 +879,8 @@
             
             stats.forEach(stat => {
                 const value = playerStats[stat];
-                document.getElementById(`${stat}-value`).textContent = value;
-                document.getElementById(`${stat}-bar`).style.width = `${value}%`;
+                document.getElementById(${stat}-value).textContent = value;
+                document.getElementById(${stat}-bar).style.width = ${value}%;
             });
             
             // Определяем архетип
@@ -984,7 +972,5 @@
             }
         });
     </script>
-    </div>
-    
 </body>
 </html>
