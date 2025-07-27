@@ -10,6 +10,18 @@ class PvPSystem {
 
     // Генерация специальных вопросов для дуэлей (более сложные)
     generateDuelQuestions() {
+        // Используем специальные PvP сценарии
+        if (window.pvpScenarios && window.pvpScenarios.length > 0) {
+            return window.pvpScenarios.map(scenario => ({
+                question: scenario.text,
+                options: scenario.options.map(opt => opt.text),
+                correctAnswer: -1, // Нет правильного ответа, оценивается по логике
+                difficulty: "hard",
+                scenario: scenario
+            }));
+        }
+        
+        // Fallback на старые вопросы
         return [
             {
                 question: "В ситуации, где нужно выбрать между спасением одного близкого человека или группы незнакомцев, что выберете?",
@@ -135,10 +147,18 @@ class PvPSystem {
         if (question.difficulty === 'hard') baseScore += 10;
         if (question.difficulty === 'extreme') baseScore += 20;
         
-        // Логическая оценка ответа
-        const logicBonus = this.evaluateLogic(answerIndex, question);
+        // Используем моральность из новых сценариев
+        if (question.scenario && question.scenario.options[answerIndex]) {
+            const option = question.scenario.options[answerIndex];
+            baseScore += option.morality; // Добавляем моральность как бонус
+            baseScore += option.xp / 10; // Добавляем часть XP как бонус
+        } else {
+            // Логическая оценка ответа для старых вопросов
+            const logicBonus = this.evaluateLogic(answerIndex, question);
+            baseScore += logicBonus;
+        }
         
-        return baseScore + logicBonus;
+        return Math.max(0, baseScore); // Не меньше 0
     }
 
     // Оценка логики ответа
@@ -240,6 +260,13 @@ class TournamentSystem {
     }
 
     getRandomScenario() {
+        // Используем новые сценарии из gameScenarios
+        if (window.gameScenarios && window.gameScenarios.length > 0) {
+            const randomScenario = window.gameScenarios[Math.floor(Math.random() * window.gameScenarios.length)];
+            return randomScenario.text;
+        }
+        
+        // Fallback на старые сценарии
         const scenarios = [
             "В ситуации морального выбора между личной выгодой и общественным благом...",
             "Когда нужно принять решение, влияющее на жизни многих людей...",

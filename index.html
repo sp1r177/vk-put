@@ -9,6 +9,10 @@
     <script src="game-systems.js"></script>
     <script src="vk-integration.js"></script>
     <script src="lobby-system.js"></script>
+    <script src="game-scenarios.js"></script>
+    <script src="game-scenarios-2.js"></script>
+    <script src="pvp-scenarios.js"></script>
+    <script src="pvp-scenarios-2.js"></script>
     <style>
         * {
             margin: 0;
@@ -1636,14 +1640,42 @@
             nextScene();
         }
 
+        // Получить случайный сценарий из новых
+        function getRandomGameScenario() {
+            if (window.gameScenarios && window.gameScenarios.length > 0) {
+                const randomScenario = window.gameScenarios[Math.floor(Math.random() * window.gameScenarios.length)];
+                return {
+                    scene: randomScenario.text,
+                    options: randomScenario.options.map(opt => opt.text),
+                    effects: randomScenario.options.map(opt => ({
+                        power: Math.floor(opt.morality / 10),
+                        wisdom: Math.floor(opt.morality / 5),
+                        honor: opt.morality,
+                        xp: opt.xp
+                    }))
+                };
+            }
+            return null;
+        }
+
         // Следующая сцена
         function nextScene() {
-            if (gameData.currentScene >= gameScenes.length) {
-                // Если сцены закончились, начинаем заново с увеличенной сложностью
-                gameData.currentScene = 0;
+            // 70% шанс использовать новый сценарий, 30% - старый
+            const useNewScenario = Math.random() < 0.7;
+            
+            let scene;
+            if (useNewScenario) {
+                scene = getRandomGameScenario();
             }
             
-            const scene = gameScenes[gameData.currentScene];
+            // Если новый сценарий не получен или недоступен, используем старый
+            if (!scene) {
+                if (gameData.currentScene >= gameScenes.length) {
+                    // Если сцены закончились, начинаем заново с увеличенной сложностью
+                    gameData.currentScene = 0;
+                }
+                scene = gameScenes[gameData.currentScene];
+            }
             
             // Проверяем, является ли это босс-сценой
             if (scene.type === "boss") {
@@ -1670,8 +1702,27 @@
 
         // Сделать выбор
         function makeChoice(optionIndex) {
-            const scene = gameScenes[gameData.currentScene];
-            const effect = scene.effects[optionIndex];
+            // Получаем текущую сцену (может быть новой или старой)
+            let scene, effect, usedNewScenario = false;
+            
+            // 70% шанс использовать новый сценарий
+            const useNewScenario = Math.random() < 0.7;
+            
+            if (useNewScenario) {
+                const newScene = getRandomGameScenario();
+                if (newScene) {
+                    scene = newScene;
+                    effect = scene.effects[optionIndex];
+                    usedNewScenario = true;
+                }
+            }
+            
+            // Если новый сценарий не получен, используем старый
+            if (!scene) {
+                scene = gameScenes[gameData.currentScene];
+                effect = scene.effects[optionIndex];
+                usedNewScenario = false;
+            }
             
             // Применяем эффекты
             gameData.player.power += effect.power || 0;
@@ -1704,7 +1755,10 @@
             
             // Переходим к следующей сцене через 2 секунды
             setTimeout(() => {
-                gameData.currentScene++;
+                // Если использовали новый сценарий, не увеличиваем счетчик
+                if (!usedNewScenario) {
+                    gameData.currentScene++;
+                }
                 nextScene();
             }, 2000);
         }
