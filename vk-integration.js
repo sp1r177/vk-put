@@ -18,7 +18,7 @@ class VKIntegration {
             this.vkBridge.subscribe((e) => {
                 if (e.detail.type === 'VKWebAppInitResult') {
                     console.log('VK Bridge инициализирован');
-                    this.loadUserData();
+                    // НЕ загружаем данные автоматически - только по запросу
                 }
             });
         } else {
@@ -66,8 +66,8 @@ class VKIntegration {
             }
         };
         
-        // Загружаем данные сразу
-        setTimeout(() => this.loadUserData(), 100);
+        // НЕ загружаем данные автоматически
+        console.log('VK API симуляция готова');
     }
 
     // Загрузка данных пользователя

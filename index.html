@@ -8,6 +8,7 @@
     <script src="additional-scenes.js"></script>
     <script src="game-systems.js"></script>
     <script src="vk-integration.js"></script>
+    <script src="lobby-system.js"></script>
     <style>
         * {
             margin: 0;
@@ -95,7 +96,7 @@
         }
 
         .game-header {
-            padding: 20px;
+            padding: 15px;
             background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(0,122,255,0.1));
             border-bottom: 2px solid rgba(0,255,136,0.3);
             position: relative;
@@ -204,19 +205,20 @@
         /* Навигация */
         .game-nav {
             display: flex;
-            gap: 10px;
-            padding: 20px;
+            gap: 8px;
+            padding: 12px;
             background: rgba(0,0,0,0.3);
         }
 
         .nav-btn {
             flex: 1;
-            padding: 15px;
+            padding: 10px 8px;
             background: linear-gradient(45deg, rgba(0,255,136,0.1), rgba(0,122,255,0.1));
             border: 2px solid rgba(0,255,136,0.3);
-            border-radius: 15px;
+            border-radius: 12px;
             color: #fff;
             font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -247,7 +249,7 @@
         /* Экран игры */
         .game-content {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             display: none;
         }
 
@@ -836,6 +838,125 @@
             background: rgba(255,165,0,0.1);
         }
 
+        /* Стили для лобби */
+        .lobby-section {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,193,7,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #FF6B35;
+        }
+
+        .lobby-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF6B35;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .public-challenge {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,107,53,0.3);
+        }
+
+        .challenge-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .challenger-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .challenger-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FF6B35, #FFC107);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .challenge-details {
+            text-align: right;
+        }
+
+        .challenge-bet {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFC107;
+        }
+
+        .challenge-level {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .challenge-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .rating-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .rating-tab {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rating-tab.active {
+            background: linear-gradient(45deg, #FF6B35, #FFC107);
+        }
+
+        .rating-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin: 5px 0;
+        }
+
+        .rating-rank {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FFC107;
+            margin-right: 10px;
+        }
+
+        .rating-player {
+            flex: 1;
+        }
+
+        .rating-stats {
+            text-align: right;
+            font-size: 12px;
+        }
+
         /* Адаптивность */
         @media (max-width: 768px) {
             .game-header {
@@ -1211,20 +1332,57 @@
                 </div>
             </div>
 
+            <!-- Лобби -->
+            <div class="lobby-section" id="lobby-section" style="display: none;">
+                <div class="lobby-header">
+                    🏆 Игровое Лобби
+                    <button class="friend-btn invite-btn" onclick="hideLobby()" style="float: right; margin-top: -5px;">← Назад</button>
+                </div>
+                <div class="options-container">
+                    <button class="option-btn" onclick="createPublicChallenge()">
+                        ⚔️ Создать вызов
+                    </button>
+                    <button class="option-btn" onclick="showPublicChallenges()">
+                        📋 Публичные вызовы
+                    </button>
+                    <button class="option-btn" onclick="showMyChallenges()">
+                        🎯 Мои вызовы
+                    </button>
+                </div>
+                <div id="public-challenges-list"></div>
+            </div>
+
+            <!-- Рейтинги -->
+            <div class="lobby-section" id="ratings-section" style="display: none;">
+                <div class="lobby-header">
+                    🏅 Рейтинг Дуэлянтов
+                    <button class="friend-btn invite-btn" onclick="hideRatings()" style="float: right; margin-top: -5px;">← Назад</button>
+                </div>
+                <div class="rating-tabs">
+                    <button class="rating-tab active" onclick="showRating('daily')">День</button>
+                    <button class="rating-tab" onclick="showRating('weekly')">Неделя</button>
+                    <button class="rating-tab" onclick="showRating('monthly')">Месяц</button>
+                </div>
+                <div id="ratings-list"></div>
+            </div>
+
             <div class="scene-container">
                 <div class="scene-text">
-                    🎯 <strong>PvP Дуэли с друзьями VK</strong> - Бросайте вызовы своим друзьям в моральных поединках! 
+                    🎯 <strong>PvP Дуэли</strong> - Сражайтесь с друзьями и случайными игроками в моральных поединках! 
                     В дуэли 10 сложных вопросов, где каждый ответ оценивается по логике и скорости.
                 </div>
                 <div class="options-container">
                     <button class="option-btn" onclick="loadFriendsList()">
-                        👥 Показать друзей
+                        👥 Друзья VK
+                    </button>
+                    <button class="option-btn" onclick="showLobby()">
+                        🏆 Игровое лобби
+                    </button>
+                    <button class="option-btn" onclick="showRatings()">
+                        🏅 Рейтинги
                     </button>
                     <button class="option-btn" onclick="showActiveChallenges()">
-                        📋 Активные вызовы
-                    </button>
-                    <button class="option-btn" onclick="showPvPHistory()">
-                        📜 История дуэлей
+                        📋 Мои вызовы
                     </button>
                 </div>
             </div>
@@ -1291,7 +1449,7 @@
         };
 
         // Инициализация игровых систем
-        let pvpSystem, tournamentSystem, guildSystem, limitationSystem, vkIntegration;
+        let pvpSystem, tournamentSystem, guildSystem, limitationSystem, vkIntegration, lobbySystem;
 
         // Сцены игры
         const gameScenes = [
@@ -1609,8 +1767,24 @@
 
         // === PvP ФУНКЦИИ С VK ИНТЕГРАЦИЕЙ ===
         function loadFriendsList() {
-            if (!vkIntegration || !vkIntegration.currentUser) {
+            if (!vkIntegration) {
                 alert("VK интеграция не загружена. Попробуйте обновить страницу.");
+                return;
+            }
+
+            // Загружаем данные пользователя только при первом запросе
+            if (!vkIntegration.currentUser) {
+                vkIntegration.loadUserData().then(() => {
+                    displayFriendsList();
+                });
+            } else {
+                displayFriendsList();
+            }
+        }
+
+        function displayFriendsList() {
+            if (!vkIntegration.currentUser) {
+                alert("Не удалось загрузить данные пользователя.");
                 return;
             }
 
@@ -1782,6 +1956,206 @@
             document.getElementById('challenges-section').style.display = 'none';
         }
 
+        // === ФУНКЦИИ ЛОББИ ===
+        function showLobby() {
+            document.getElementById('lobby-section').style.display = 'block';
+            document.getElementById('friends-section').style.display = 'none';
+            document.getElementById('challenges-section').style.display = 'none';
+            document.getElementById('ratings-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+        }
+
+        function hideLobby() {
+            document.getElementById('lobby-section').style.display = 'none';
+        }
+
+        function showRatings() {
+            document.getElementById('ratings-section').style.display = 'block';
+            document.getElementById('friends-section').style.display = 'none';
+            document.getElementById('challenges-section').style.display = 'none';
+            document.getElementById('lobby-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+            showRating('daily'); // Показываем дневной рейтинг по умолчанию
+        }
+
+        function hideRatings() {
+            document.getElementById('ratings-section').style.display = 'none';
+        }
+
+        function createPublicChallenge() {
+            const maxBet = Math.min(500, gameData.player.xp);
+            if (maxBet < 50) {
+                alert("У вас недостаточно XP для создания вызова! Нужно минимум 50 XP.");
+                return;
+            }
+            
+            const bet = parseInt(prompt(`Введите ставку XP (от 50 до ${maxBet}):`)) || 100;
+            if (bet < 50 || bet > maxBet) {
+                alert(`Ставка должна быть от 50 до ${maxBet} XP`);
+                return;
+            }
+            
+            const minLevel = parseInt(prompt("Минимальный уровень для принятия вызова (1-20):")) || 1;
+            if (minLevel < 1 || minLevel > 20) {
+                alert("Минимальный уровень должен быть от 1 до 20");
+                return;
+            }
+            
+            const challenge = lobbySystem.createPublicChallenge(gameData.player, bet, minLevel);
+            if (challenge) {
+                alert(`🏆 Публичный вызов создан! Ставка: ${bet} XP, мин. уровень: ${minLevel}`);
+                showPublicChallenges();
+            }
+        }
+
+        function showPublicChallenges() {
+            const challenges = lobbySystem.getActiveChallenges();
+            const challengesList = document.getElementById('public-challenges-list');
+            
+            if (challenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет активных вызовов</p>';
+                return;
+            }
+            
+            let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">⚔️ Доступные вызовы</h4>';
+            challenges.forEach(challenge => {
+                if (challenge.challenger !== gameData.player.id) { // Не показываем свои вызовы
+                    html += createPublicChallengeItem(challenge);
+                }
+            });
+            
+            challengesList.innerHTML = html;
+        }
+
+        function createPublicChallengeItem(challenge) {
+            const canAccept = gameData.player.level >= challenge.minLevel && gameData.player.xp >= challenge.bet;
+            const acceptButton = canAccept ? 
+                `<button class="friend-btn challenge-btn" onclick="acceptPublicChallenge(${challenge.id})">✅ Принять</button>` :
+                `<button class="friend-btn invite-btn" disabled style="opacity: 0.5;">❌ Недоступно</button>`;
+            
+            return `
+                <div class="public-challenge">
+                    <div class="challenge-info">
+                        <div class="challenger-info">
+                            <div class="challenger-avatar">${challenge.challengerName.charAt(0)}</div>
+                            <div>
+                                <div class="friend-name">${challenge.challengerName}</div>
+                                <div class="friend-status">Уровень ${challenge.challengerLevel}</div>
+                            </div>
+                        </div>
+                        <div class="challenge-details">
+                            <div class="challenge-bet">${challenge.bet} XP</div>
+                            <div class="challenge-level">Мин. уровень: ${challenge.minLevel}</div>
+                        </div>
+                    </div>
+                    <div class="challenge-actions">
+                        ${acceptButton}
+                    </div>
+                </div>
+            `;
+        }
+
+        function acceptPublicChallenge(challengeId) {
+            const result = lobbySystem.acceptPublicChallenge(challengeId, gameData.player);
+            if (result && !result.error) {
+                alert(`⚔️ Вызов принят! Начинаем дуэль с ${result.challengerName}`);
+                // Создаем дуэль в PvP системе
+                const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
+                if (duel) {
+                    gameData.currentDuel = duel;
+                    startPvPDuel(duel);
+                }
+            } else if (result && result.error) {
+                alert(`❌ ${result.error}`);
+            } else {
+                alert("❌ Вызов недоступен");
+            }
+        }
+
+        function showMyChallenges() {
+            const challenges = lobbySystem.getActiveChallenges();
+            const myChallenges = challenges.filter(c => c.challenger === gameData.player.id);
+            const challengesList = document.getElementById('public-challenges-list');
+            
+            if (myChallenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">У вас нет активных вызовов</p>';
+                return;
+            }
+            
+            let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">🎯 Мои вызовы</h4>';
+            myChallenges.forEach(challenge => {
+                html += `
+                    <div class="public-challenge">
+                        <div class="challenge-info">
+                            <div class="challenger-info">
+                                <div class="challenger-avatar">${challenge.challengerName.charAt(0)}</div>
+                                <div>
+                                    <div class="friend-name">${challenge.challengerName}</div>
+                                    <div class="friend-status">Ставка: ${challenge.bet} XP</div>
+                                </div>
+                            </div>
+                            <div class="challenge-details">
+                                <div class="challenge-level">Мин. уровень: ${challenge.minLevel}</div>
+                                <div class="friend-status">Ожидает...</div>
+                            </div>
+                        </div>
+                        <div class="challenge-actions">
+                            <button class="friend-btn invite-btn" onclick="cancelPublicChallenge(${challenge.id})">❌ Отменить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            challengesList.innerHTML = html;
+        }
+
+        function cancelPublicChallenge(challengeId) {
+            if (confirm("Отменить этот вызов?")) {
+                const success = lobbySystem.cancelChallenge(challengeId, gameData.player.id);
+                if (success) {
+                    alert("Вызов отменен");
+                    showMyChallenges();
+                }
+            }
+        }
+
+        function showRating(period) {
+            // Обновляем активную вкладку
+            document.querySelectorAll('.rating-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const ratings = lobbySystem.getTopPlayers(period, 10);
+            const ratingsList = document.getElementById('ratings-list');
+            
+            if (ratings.length === 0) {
+                ratingsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет данных для этого периода</p>';
+                return;
+            }
+            
+            let html = '';
+            ratings.forEach((player, index) => {
+                const rank = index + 1;
+                const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                
+                html += `
+                    <div class="rating-item">
+                        <div class="rating-rank">${rankIcon}</div>
+                        <div class="rating-player">
+                            <div class="friend-name">${player.playerName}</div>
+                            <div class="friend-status">Рейтинг: ${player.rating}</div>
+                        </div>
+                        <div class="rating-stats">
+                            <div>Победы: ${player.wins}</div>
+                            <div>Поражения: ${player.losses}</div>
+                            <div>Всего ставок: ${player.totalBet} XP</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ratingsList.innerHTML = html;
+        }
+
         function acceptPvPChallenge(challengeId) {
             const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
             if (duel) {
@@ -1860,6 +2234,11 @@
                 gameData.player.pvpLosses++;
                 gameData.player.xp = Math.max(0, gameData.player.xp - result.bet);
             }
+            
+            // Записываем результат в лобби систему
+            const winner = isWinner ? gameData.player : { id: 'opponent', name: result.winner };
+            const loser = isWinner ? { id: 'opponent', name: result.loser } : gameData.player;
+            lobbySystem.recordDuelResult(winner, loser, result.bet);
             
             // Показываем результат
             const resultMessage = message + '\n\nХотите поделиться результатом?';
@@ -2050,6 +2429,7 @@
             guildSystem = new GameSystems.GuildSystem();
             limitationSystem = new GameSystems.LimitationSystem();
             vkIntegration = new VKIntegration();
+            lobbySystem = new LobbySystem();
             
             // Обновляем UI
             updateGuildUI();
