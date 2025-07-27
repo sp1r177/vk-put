@@ -144,6 +144,18 @@ class VKIntegration {
     // Отправить вызов на дуэль другу
     async sendDuelChallenge(friendId, bet) {
         try {
+            // Проверяем, находится ли друг в приложении
+            const isInApp = this.isUserInApp(friendId);
+            
+            if (!isInApp) {
+                // Если друг не в приложении, предлагаем пригласить его
+                const shouldInvite = confirm("Этот друг не в игре. Хотите пригласить его?");
+                if (shouldInvite) {
+                    await this.inviteFriend(friendId);
+                }
+                return null;
+            }
+            
             // Создаем вызов в нашей системе
             const challenge = {
                 id: Date.now() + Math.random(),
@@ -172,11 +184,18 @@ class VKIntegration {
     async sendVKNotification(userId, challenge) {
         try {
             // В реальном приложении здесь был бы вызов к VK API
-            // для отправки уведомления пользователю
+            // для отправки push-уведомления пользователю
             console.log('Уведомление отправлено пользователю:', userId);
             
-            // Пока что просто показываем сообщение
-            alert(`Вызов отправлен! В реальном приложении пользователь получит уведомление.`);
+            // Симуляция отправки уведомления
+            if (this.vkBridge.send.toString().includes('simulateVKAPI')) {
+                // В симуляции просто логируем
+                console.log(`Симуляция: Уведомление о дуэли отправлено пользователю ${userId}`);
+            } else {
+                // В реальном VK приложении здесь был бы вызов к VK API
+                // для отправки push-уведомления
+                console.log('VK API: Отправка push-уведомления о дуэли');
+            }
         } catch (error) {
             console.error('Ошибка отправки уведомления:', error);
         }

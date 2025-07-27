@@ -838,27 +838,137 @@
 
         /* Адаптивность */
         @media (max-width: 768px) {
-            .player-stats {
+            .game-header {
+                padding: 15px;
+            }
+            
+            .player-info {
                 flex-direction: column;
-                gap: 5px;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .player-stats {
+                justify-content: center;
+                gap: 20px;
             }
             
             .game-nav {
                 flex-direction: column;
+                gap: 8px;
+                padding: 15px;
+            }
+            
+            .nav-btn {
+                padding: 12px;
+                font-size: 14px;
             }
             
             .scene-text {
                 font-size: 16px;
+                line-height: 1.5;
             }
-
+            
+            .option-btn {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
             .duel-participants {
                 flex-direction: column;
                 gap: 20px;
             }
-
+            
             .duel-vs {
                 margin: 10px 0;
             }
+            
+            .friend-item {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .friend-actions {
+                justify-content: center;
+            }
+            
+            .guild-card, .tournament-card {
+                padding: 20px;
+            }
+            
+            .boss-arena, .scene-container {
+                padding: 20px;
+                margin: 15px 0;
+            }
+        }
+
+        /* Дополнительные стили для мобильных устройств */
+        @media (max-width: 480px) {
+            .game-header {
+                padding: 10px;
+            }
+            
+            .player-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .level-badge {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+            }
+            
+            .game-nav {
+                padding: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px;
+                font-size: 13px;
+            }
+            
+            .scene-text {
+                font-size: 15px;
+            }
+            
+            .option-btn {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .boss-title, .leaderboard-header {
+                font-size: 20px;
+            }
+            
+            .guild-name, .tournament-title {
+                font-size: 18px;
+            }
+        }
+
+        /* Исправление скролла */
+        body {
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        .main-screen {
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .game-content {
+            padding-bottom: 20px;
         }
     </style>
 </head>
@@ -1063,13 +1173,19 @@
 
             <!-- Список друзей -->
             <div class="friends-section" id="friends-section" style="display: none;">
-                <div class="friends-header">👥 Ваши друзья</div>
+                <div class="friends-header">
+                    👥 Ваши друзья
+                    <button class="friend-btn invite-btn" onclick="hideFriendsList()" style="float: right; margin-top: -5px;">← Назад</button>
+                </div>
                 <div id="friends-list"></div>
             </div>
 
             <!-- Активные вызовы -->
             <div class="friends-section" id="challenges-section" style="display: none;">
-                <div class="friends-header">⚔️ Активные вызовы</div>
+                <div class="friends-header">
+                    ⚔️ Активные вызовы
+                    <button class="friend-btn invite-btn" onclick="hideChallengesList()" style="float: right; margin-top: -5px;">← Назад</button>
+                </div>
                 <div id="challenges-list"></div>
             </div>
 
@@ -1537,10 +1653,11 @@
 
         function createFriendItem(friend, isInApp) {
             const statusClass = isInApp ? 'app-user' : 'non-app-user';
-            const statusText = isInApp ? 'В приложении' : 'Не в приложении';
+            const statusText = isInApp ? '✅ В приложении' : '📱 Не в приложении';
+            const statusIcon = isInApp ? '🎮' : '📱';
             const actionButton = isInApp ? 
-                `<button class="friend-btn challenge-btn" onclick="challengeFriend(${friend.id})">⚔️ Вызов</button>` :
-                `<button class="friend-btn invite-btn" onclick="inviteFriend(${friend.id})">📱 Пригласить</button>`;
+                `<button class="friend-btn challenge-btn" onclick="challengeFriend(${friend.id})">⚔️ Вызов на дуэль</button>` :
+                `<button class="friend-btn invite-btn" onclick="inviteFriend(${friend.id})">📨 Пригласить в игру</button>`;
             
             return `
                 <div class="friend-item ${statusClass}">
@@ -1548,7 +1665,7 @@
                         <div class="friend-avatar">${friend.first_name.charAt(0)}${friend.last_name.charAt(0)}</div>
                         <div>
                             <div class="friend-name">${friend.first_name} ${friend.last_name}</div>
-                            <div class="friend-status">${statusText}</div>
+                            <div class="friend-status">${statusIcon} ${statusText}</div>
                         </div>
                     </div>
                     <div class="friend-actions">
@@ -1559,34 +1676,40 @@
         }
 
         function challengeFriend(friendId) {
-            const bet = parseInt(prompt("Введите ставку XP (от 50 до 500):")) || 100;
-            if (bet < 50 || bet > 500) {
-                alert("Ставка должна быть от 50 до 500 XP");
+            // Проверяем, есть ли у нас достаточно XP для ставки
+            const maxBet = Math.min(500, gameData.player.xp);
+            if (maxBet < 50) {
+                alert("У вас недостаточно XP для вызова! Нужно минимум 50 XP.");
                 return;
             }
             
-            if (gameData.player.xp < bet) {
-                alert("У вас недостаточно XP для такой ставки!");
+            const bet = parseInt(prompt(`Введите ставку XP (от 50 до ${maxBet}):`)) || 100;
+            if (bet < 50 || bet > maxBet) {
+                alert(`Ставка должна быть от 50 до ${maxBet} XP`);
                 return;
             }
             
+            // Отправляем вызов
             vkIntegration.sendDuelChallenge(friendId, bet).then(challenge => {
                 if (challenge) {
-                    alert(`Вызов отправлен другу! В реальном приложении он получит уведомление.`);
+                    alert(`⚔️ Вызов отправлен другу! В реальном приложении он получит уведомление о дуэли.`);
                 } else {
-                    alert("Ошибка отправки вызова");
+                    alert("❌ Ошибка отправки вызова");
                 }
             });
         }
 
         function inviteFriend(friendId) {
-            vkIntegration.inviteFriend(friendId).then(success => {
-                if (success) {
-                    alert("Приглашение отправлено!");
-                } else {
-                    alert("Ошибка отправки приглашения");
-                }
-            });
+            // Показываем диалог подтверждения
+            if (confirm("Хотите пригласить друга в игру? Он получит приглашение через VK.")) {
+                vkIntegration.inviteFriend(friendId).then(success => {
+                    if (success) {
+                        alert("📱 Приглашение отправлено! Когда друг присоединится к игре, вы сможете вызвать его на дуэль.");
+                    } else {
+                        alert("❌ Ошибка отправки приглашения");
+                    }
+                });
+            }
         }
 
         function showActiveChallenges() {
@@ -1649,6 +1772,14 @@
                 alert("Вызов отклонен");
                 showActiveChallenges(); // Обновляем список
             }
+        }
+
+        function hideFriendsList() {
+            document.getElementById('friends-section').style.display = 'none';
+        }
+
+        function hideChallengesList() {
+            document.getElementById('challenges-section').style.display = 'none';
         }
 
         function acceptPvPChallenge(challengeId) {
