@@ -30,6 +30,11 @@
     "api_version": "5.131",
     "mobile_iframe": true,
     "mobile_iframe_tg_confirm": false,
-    "trusted": false
+    "trusted": false,
+    "web_app_settings": {
+      "button_text": "Играть",
+      "web_app_domain": "",
+      "web_app_url": "./index.html"
+    }
   }
 }

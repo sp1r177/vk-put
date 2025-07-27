@@ -305,9 +305,24 @@
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(180deg); }
         }
+
+        /* Debug info */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 200px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+    <div class="debug-info" id="debug-info">Загрузка...</div>
     <div class="floating-particles" id="particles"></div>
     
     <div class="container">
@@ -458,6 +473,15 @@
     </div>
 
     <script>
+        // Debug функция
+        function debug(message) {
+            console.log(message);
+            const debugDiv = document.getElementById('debug-info');
+            if (debugDiv) {
+                debugDiv.innerHTML = message + '<br>' + debugDiv.innerHTML;
+            }
+        }
+
         // Игровые данные
         let playerStats = {
             empathy: 50,
@@ -470,7 +494,7 @@
 
         let currentScene = null;
         
-        // 500 уникальных игровых сцен
+        // Игровые сцены
         const gameScenes = [
             {
                 scene: "Ваш лучший друг просит занять крупную сумму денег на неопределенный срок. У вас есть эти деньги, но они отложены на важную покупку.",
@@ -499,7 +523,7 @@
                 ]
             },
             {
-                scene: "Ваш коллега постоянно перекладывает свою работу на других, но начальство его не замечает. Сегодня он попросил вас 'помочь' с его проектом.",
+                scene: "Ваш коллега постоянно перекладывает свою работу на других, но начальство его не замечает. Сегодня он попросил вас помочь с его проектом.",
                 options: [
                     "Помогаю, но четко объясняю границы",
                     "Отказываюсь и предлагаю поговорить с руководством",
@@ -509,229 +533,6 @@
                     { empathy: 5, confidence: 15, ego: 0, clarity: 15 },
                     { empathy: 0, confidence: 20, ego: 5, clarity: 10 },
                     { empathy: 10, confidence: -10, ego: -5, clarity: -10 }
-                ]
-            },
-            {
-                scene: "Вы стали свидетелем того, как родитель кричит на ребенка в общественном месте. Ребенок явно напуган, но вмешательство может усугубить ситуацию.",
-                options: [
-                    "Мягко пытаюсь отвлечь внимание и разрядить обстановку",
-                    "Прямо говорю родителю о недопустимости такого поведения",
-                    "Не вмешиваюсь, но вызываю службу защиты детей"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 5, ego: -5, clarity: 10 },
-                    { empathy: 10, confidence: 15, ego: 0, clarity: 5 },
-                    { empathy: 5, confidence: 0, ego: 5, clarity: 15 }
-                ]
-            },
-            {
-                scene: "Ваш партнер предлагает открыть отношения. Вы против, но понимаете, что категорический отказ может привести к расставанию.",
-                options: [
-                    "Честно говорю о своих чувствах и страхах",
-                    "Соглашаюсь попробовать, несмотря на дискомфорт",
-                    "Ставлю ультиматум: либо я, либо открытые отношения"
-                ],
-                effects: [
-                    { empathy: 10, confidence: 10, ego: -5, clarity: 20 },
-                    { empathy: 5, confidence: -15, ego: -10, clarity: -5 },
-                    { empathy: -5, confidence: 5, ego: 15, clarity: 5 }
-                ]
-            },
-            {
-                scene: "Вы узнали, что ваш близкий друг изменяет своему партнеру. Вы знакомы и с изменяемой стороной, которая ничего не подозревает.",
-                options: [
-                    "Конфронтирую с другом и требую признаться",
-                    "Анонимно сообщаю пострадавшей стороне",
-                    "Не вмешиваюсь, это их личные дела"
-                ],
-                effects: [
-                    { empathy: 5, confidence: 15, ego: -5, clarity: 10 },
-                    { empathy: 15, confidence: -5, ego: 0, clarity: 5 },
-                    { empathy: -10, confidence: -5, ego: 10, clarity: -5 }
-                ]
-            },
-            {
-                scene: "На работе вас повысили, но вы знаете, что более квалифицированный коллега был обойден из-за офисной политики, а не меритократии.",
-                options: [
-                    "Принимаю повышение, но помогаю коллеге найти лучшие возможности",
-                    "Отказываюсь от повышения и рассказываю руководству о несправедливости",
-                    "Принимаю повышение и стараюсь забыть об этой ситуации"
-                ],
-                effects: [
-                    { empathy: 10, confidence: 5, ego: 5, clarity: 15 },
-                    { empathy: 15, confidence: 10, ego: -15, clarity: 20 },
-                    { empathy: -10, confidence: 0, ego: 20, clarity: -10 }
-                ]
-            },
-            {
-                scene: "Ваша мать постоянно критикует ваш выбор партнера, говоря, что вы 'могли бы найти лучше'. Это создает напряжение в семье.",
-                options: [
-                    "Четко объясняю матери границы и прошу уважать мой выбор",
-                    "Избегаю разговоров на эту тему, надеясь, что она привыкнет",
-                    "Разрываю отношения с партнером, чтобы сохранить мир в семье"
-                ],
-                effects: [
-                    { empathy: 5, confidence: 20, ego: 5, clarity: 15 },
-                    { empathy: 0, confidence: -10, ego: 0, clarity: -5 },
-                    { empathy: -5, confidence: -15, ego: -10, clarity: -15 }
-                ]
-            },
-            {
-                scene: "Вы видите, как пожилой человек в магазине не может расплатиться картой из-за технических проблем. За ним выстраивается очередь раздраженных людей.",
-                options: [
-                    "Предлагаю свою помощь с технологией",
-                    "Плачу за его покупки сам",
-                    "Жду терпеливо, подбадривая его словами"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 10, ego: -5, clarity: 5 },
-                    { empathy: 20, confidence: 5, ego: -10, clarity: 0 },
-                    { empathy: 10, confidence: 0, ego: -5, clarity: 10 }
-                ]
-            },
-            {
-                scene: "Ваш коллега просит вас солгать начальству о причинах его отсутствия вчера. Вы знаете, что он был на собеседовании в другой компании.",
-                options: [
-                    "Отказываюсь врать, но обещаю молчать",
-                    "Соглашаюсь помочь, понимая его ситуацию",
-                    "Отказываюсь и советую ему быть честным"
-                ],
-                effects: [
-                    { empathy: 5, confidence: 10, ego: 0, clarity: 15 },
-                    { empathy: 15, confidence: -5, ego: 5, clarity: -10 },
-                    { empathy: 0, confidence: 15, ego: 5, clarity: 20 }
-                ]
-            }
-                     },
-            // Добавляем еще сцены для достижения 500
-            {
-                scene: "В ресторане официант явно новичок и делает много ошибок с вашим заказом. Вы видите, как он нервничает, а другие клиенты начинают жаловаться.",
-                options: [
-                    "Терпеливо жду и подбадриваю официанта",
-                    "Вежливо прошу менеджера о другом официанте",
-                    "Ухожу из ресторана, оставив негативный отзыв"
-                ],
-                effects: [
-                    { empathy: 20, confidence: 5, ego: -10, clarity: 5 },
-                    { empathy: 5, confidence: 5, ego: 10, clarity: 15 },
-                    { empathy: -15, confidence: 0, ego: 15, clarity: -5 }
-                ]
-            },
-            {
-                scene: "Ваш сосед постоянно шумит по ночам, мешая вам спать. Прямые просьбы не помогают, и вы узнали, что у него недавно развод и депрессия.",
-                options: [
-                    "Предлагаю поговорить и найти компромисс",
-                    "Обращаюсь в управляющую компанию с жалобой",
-                    "Покупаю беруши и пытаюсь привыкнуть"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 10, ego: -5, clarity: 15 },
-                    { empathy: 0, confidence: 15, ego: 10, clarity: 10 },
-                    { empathy: 10, confidence: -10, ego: -5, clarity: 5 }
-                ]
-            },
-            {
-                scene: "На улице к вам подходит бездомный человек и просит денег на еду. У вас есть мелочь, но вы подозреваете, что деньги пойдут на алкоголь.",
-                options: [
-                    "Покупаю ему еду вместо денег",
-                    "Даю деньги, не задавая вопросов",
-                    "Отказываю, объясняя свои сомнения"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 5, ego: 0, clarity: 15 },
-                    { empathy: 20, confidence: 0, ego: -10, clarity: -5 },
-                    { empathy: -5, confidence: 10, ego: 5, clarity: 10 }
-                ]
-            },
-            {
-                scene: "Ваш друг пьет слишком много на вечеринке и собирается сесть за руль. Он агрессивно отвергает ваши попытки остановить его.",
-                options: [
-                    "Физически забираю у него ключи",
-                    "Звоню в полицию анонимно",
-                    "Предлагаю поехать с ним как пассажир"
-                ],
-                effects: [
-                    { empathy: 10, confidence: 20, ego: -5, clarity: 15 },
-                    { empathy: 15, confidence: 5, ego: 0, clarity: 20 },
-                    { empathy: 20, confidence: -10, ego: -15, clarity: -10 }
-                ]
-            },
-            {
-                scene: "В автобусе пожилая женщина с тяжелыми сумками стоит, но все места заняты молодыми людьми, которые делают вид, что не замечают ее.",
-                options: [
-                    "Уступаю свое место и прошу других последовать примеру",
-                    "Просто уступаю свое место молча",
-                    "Громко обращаюсь к молодежи с призывом уступить место"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 15, ego: -5, clarity: 10 },
-                    { empathy: 20, confidence: 0, ego: -10, clarity: 5 },
-                    { empathy: 10, confidence: 10, ego: 0, clarity: 15 }
-                ]
-            },
-            {
-                scene: "Ваш ребенок пришел домой в слезах, рассказав, что его дразнят в школе из-за внешности. Вы чувствуете собственную боль и гнев.",
-                options: [
-                    "Иду в школу поговорить с учителем и родителями обидчиков",
-                    "Учу ребенка, как отвечать на насмешки и защищать себя",
-                    "Предлагаю сменить школу или внешность ребенка"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 10, ego: 5, clarity: 15 },
-                    { empathy: 10, confidence: 20, ego: 0, clarity: 20 },
-                    { empathy: 5, confidence: -10, ego: 10, clarity: -15 }
-                ]
-            },
-            {
-                scene: "В соцсетях вы видите пост друга с очевидно ложной, но вредной информацией о здоровье. Вы знаете, что он искренне верит в это.",
-                options: [
-                    "Публично корректирую информацию с источниками",
-                    "Пишу ему лично, объясняя ошибки",
-                    "Игнорирую, чтобы не портить отношения"
-                ],
-                effects: [
-                    { empathy: 5, confidence: 15, ego: 0, clarity: 20 },
-                    { empathy: 15, confidence: 5, ego: -5, clarity: 15 },
-                    { empathy: 0, confidence: -5, ego: 5, clarity: -10 }
-                ]
-            },
-            {
-                scene: "Ваш начальник просит вас переработать в выходные за обычную зарплату, хотя знает о ваших семейных планах. Отказ может повлиять на карьеру.",
-                options: [
-                    "Отказываюсь, объясняя важность work-life balance",
-                    "Соглашаюсь, но прошу компенсацию или отгул",
-                    "Соглашаюсь без условий, чтобы показать преданность"
-                ],
-                effects: [
-                    { empathy: 5, confidence: 20, ego: 0, clarity: 15 },
-                    { empathy: 0, confidence: 15, ego: 10, clarity: 15 },
-                    { empathy: -5, confidence: -10, ego: 5, clarity: -15 }
-                ]
-            },
-            {
-                scene: "Вы стали свидетелем домашнего насилия в соседней квартире. Крики и звуки борьбы слышны через стену.",
-                options: [
-                    "Немедленно вызываю полицию",
-                    "Стучу в дверь, пытаясь вмешаться лично",
-                    "Записываю происходящее и собираю доказательства"
-                ],
-                effects: [
-                    { empathy: 20, confidence: 10, ego: -5, clarity: 20 },
-                    { empathy: 25, confidence: 15, ego: -10, clarity: 5 },
-                    { empathy: 15, confidence: 5, ego: 0, clarity: 25 }
-                ]
-            },
-            {
-                scene: "Ваш друг начал встречаться с человеком, которого вы считаете токсичным и манипулятивным. Друг счастлив и не видит красных флагов.",
-                options: [
-                    "Мягко высказываю свои опасения с конкретными примерами",
-                    "Остаюсь рядом, ожидая, когда друг сам поймет",
-                    "Прямо говорю о токсичности партнера, рискуя дружбой"
-                ],
-                effects: [
-                    { empathy: 15, confidence: 10, ego: -5, clarity: 20 },
-                    { empathy: 20, confidence: -5, ego: -10, clarity: 10 },
-                    { empathy: 10, confidence: 20, ego: 5, clarity: 15 }
                 ]
             }
         ];
@@ -750,6 +551,7 @@
 
         // Функции управления экранами
         function showScreen(screenId) {
+            debug(`Переход на экран: ${screenId}`);
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
@@ -777,12 +579,12 @@
 
         // Игровая логика
         function loadRandomScene() {
+            debug('Загружаем случайную сцену');
             const availableScenes = gameScenes.filter((_, index) => 
                 !playerStats.completedScenes.includes(index)
             );
             
             if (availableScenes.length === 0) {
-                // Если все сцены пройдены, сбрасываем список
                 playerStats.completedScenes = [];
             }
             
@@ -808,6 +610,7 @@
         }
 
         function selectOption(optionIndex) {
+            debug(`Выбрана опция: ${optionIndex}`);
             // Блокируем кнопки
             document.querySelectorAll('#options-container .btn').forEach(btn => {
                 btn.disabled = true;
@@ -824,10 +627,7 @@
             playerStats.decisionsCount++;
             playerStats.completedScenes.push(currentScene.index);
             
-            // Сохраняем прогресс
             saveProgress();
-            
-            // Показываем результат
             showResult(optionIndex, oldStats, effects);
         }
 
@@ -874,7 +674,6 @@
 
         // Функции профиля
         function updateProfile() {
-            // Обновляем значения и полосы прогресса
             const stats = ['empathy', 'confidence', 'ego', 'clarity'];
             
             stats.forEach(stat => {
@@ -883,7 +682,6 @@
                 document.getElementById(${stat}-bar).style.width = ${value}%;
             });
             
-            // Определяем архетип
             const archetype = calculateArchetype();
             document.getElementById('archetype-title').textContent = archetype.name;
             document.getElementById('archetype-description').textContent = archetype.description;
@@ -900,7 +698,7 @@
             if (ego < 30 && clarity > 60) return archetypes.idealist;
             if (confidence > 60 && clarity > 60) return archetypes.pragmatist;
             
-            return archetypes.explorer; // По умолчанию
+            return archetypes.explorer;
         }
 
         function updateMainScreen() {
@@ -932,45 +730,102 @@
 
         // Сохранение и загрузка
         function saveProgress() {
-            localStorage.setItem('putGame_progress', JSON.stringify(playerStats));
+            try {
+                localStorage.setItem('putGame_progress', JSON.stringify(playerStats));
+                debug('Прогресс сохранен');
+            } catch (e) {
+                debug('Ошибка сохранения: ' + e.message);
+            }
         }
 
         function loadProgress() {
-            const saved = localStorage.getItem('putGame_progress');
-            if (saved) {
-                playerStats = { ...playerStats, ...JSON.parse(saved) };
+            try {
+                const saved = localStorage.getItem('putGame_progress');
+                if (saved) {
+                    playerStats = { ...playerStats, ...JSON.parse(saved) };
+                    debug('Прогресс загружен');
+                }
+            } catch (e) {
+                debug('Ошибка загрузки: ' + e.message);
             }
         }
 
         // Анимация частиц
         function createParticles() {
-            const container = document.getElementById('particles');
-            const particleCount = 15;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.width = (Math.random() * 10 + 5) + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
-                container.appendChild(particle);
+            try {
+                const container = document.getElementById('particles');
+                if (!container) return;
+                
+                const particleCount = 15;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.width = (Math.random() * 10 + 5) + 'px';
+                    particle.style.height = particle.style.width;
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    container.appendChild(particle);
+                }
+                debug('Частицы созданы');
+            } catch (e) {
+                debug('Ошибка создания частиц: ' + e.message);
             }
         }
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProgress();
-            updateMainScreen();
-            createParticles();
+        // Инициализация VK Bridge
+        function initVKBridge() {
+            debug('Инициализация VK Bridge...');
             
-            // VK Mini Apps bridge
             if (window.vkBridge) {
-                vkBridge.send('VKWebAppInit');
+                debug('VK Bridge найден');
+                try {
+                    vkBridge.send('VKWebAppInit')
+                        .then(() => {
+                            debug('VK Bridge успешно инициализирован');
+                        })
+                        .catch((error) => {
+                            debug('Ошибка VK Bridge: ' + error.message);
+                        });
+                } catch (e) {
+                    debug('Ошибка при вызове VK Bridge: ' + e.message);
+                }
+            } else {
+                debug('VK Bridge не найден - работаем без него');
             }
-        });
+        }
+
+        // Главная инициализация
+        function init() {
+            debug('Инициализация приложения...');
+            
+            try {
+                loadProgress();
+                updateMainScreen();
+                createParticles();
+                initVKBridge();
+                
+                debug('Приложение успешно инициализировано!');
+                
+                // Скрываем debug через 5 секунд
+                setTimeout(() => {
+                    const debugDiv = document.getElementById('debug-info');
+                    if (debugDiv) debugDiv.style.display = 'none';
+                }, 5000);
+                
+            } catch (e) {
+                debug('КРИТИЧЕСКАЯ ОШИБКА: ' + e.message);
+            }
+        }
+
+        // Запуск
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
