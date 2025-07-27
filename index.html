@@ -6,6 +6,7 @@
     <title>Путь Героя - Эпическая Игра Выборов</title>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <script src="additional-scenes.js"></script>
+    <script src="game-systems.js"></script>
     <style>
         * {
             margin: 0;
@@ -579,6 +580,160 @@
             color: #ffc107;
         }
 
+        /* PvP Дуэли */
+        .pvp-arena {
+            background: linear-gradient(135deg, #8B0000, #4B0082);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px solid #FF4500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pvp-arena::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,69,0,0.1), transparent);
+            animation: pvp-pulse 1.5s infinite;
+        }
+
+        @keyframes pvp-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .duel-participants {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .duel-player {
+            text-align: center;
+            flex: 1;
+        }
+
+        .duel-player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 10px;
+            border: 3px solid #FFD700;
+        }
+
+        .duel-vs {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            margin: 0 20px;
+        }
+
+        .duel-score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4500;
+        }
+
+        .battle-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            animation: battle-spin 2s infinite;
+        }
+
+        @keyframes battle-spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        /* Турнирные стили */
+        .tournament-bracket {
+            background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,107,53,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #FFC107;
+        }
+
+        .tournament-match {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .match-player {
+            flex: 1;
+            text-align: center;
+        }
+
+        .match-score {
+            font-weight: bold;
+            color: #FFC107;
+            margin: 0 15px;
+        }
+
+        /* Гильдейские стили */
+        .guild-member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .member-rank {
+            background: linear-gradient(45deg, #FFC107, #FF6B35);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Лимиты */
+        .daily-limits {
+            background: linear-gradient(135deg, rgba(156,39,176,0.1), rgba(103,58,183,0.1));
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #9C27B0;
+        }
+
+        .limit-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .limit-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9C27B0, #673AB7);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
         /* Адаптивность */
         @media (max-width: 768px) {
             .player-stats {
@@ -592,6 +747,15 @@
             
             .scene-text {
                 font-size: 16px;
+            }
+
+            .duel-participants {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .duel-vs {
+                margin: 10px 0;
             }
         }
     </style>
@@ -644,6 +808,9 @@
         <div class="game-nav">
             <button class="nav-btn" onclick="showSection('adventure')">
                 🗡️ Приключения
+            </button>
+            <button class="nav-btn" onclick="showSection('pvp')">
+                ⚔️ PvP Дуэли
             </button>
             <button class="nav-btn" onclick="showSection('leaderboard')">
                 🏆 Рейтинг
@@ -726,15 +893,34 @@
 
         <!-- Контент гильдий -->
         <div class="game-content" id="guilds-content">
+            <div class="guild-card" id="current-guild-info" style="display: none;">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name" id="current-guild-name">Моя гильдия</div>
+                        <div class="guild-members" id="current-guild-members">Участники</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="leaveCurrentGuild()">Покинуть</button>
+                </div>
+                <p id="current-guild-description">Описание гильдии</p>
+                <div class="guild-member" style="margin-top: 15px;">
+                    <span>Ваш вклад:</span>
+                    <span id="player-contribution">0</span>
+                </div>
+                <button class="guild-join-btn" style="width: 100%; margin-top: 10px;" onclick="contributeToGuild()">
+                    Внести 100 XP в казну
+                </button>
+            </div>
+
             <div class="guild-card">
                 <div class="guild-header">
                     <div>
                         <div class="guild-name">⚔️ Рыцари Справедливости</div>
                         <div class="guild-members">42 участника</div>
                     </div>
-                    <button class="guild-join-btn">Присоединиться</button>
+                    <button class="guild-join-btn" onclick="joinGuild('justice_knights')">Присоединиться</button>
                 </div>
                 <p>Гильдия для тех, кто ценит честность и справедливость в любых ситуациях</p>
+                <p><strong>Требования:</strong> Честь 30+ | <strong>Бонус:</strong> Удвоенный опыт за честные решения</p>
             </div>
             
             <div class="guild-card">
@@ -743,9 +929,74 @@
                         <div class="guild-name">🧠 Мудрецы Пути</div>
                         <div class="guild-members">38 участников</div>
                     </div>
-                    <button class="guild-join-btn">Присоединиться</button>
+                    <button class="guild-join-btn" onclick="joinGuild('wise_sages')">Присоединиться</button>
                 </div>
                 <p>Объединение мыслителей, которые ищут глубинный смысл в каждом решении</p>
+                <p><strong>Требования:</strong> Мудрость 25+ | <strong>Бонус:</strong> Бонус к мудрости за философские выборы</p>
+            </div>
+
+            <div class="guild-card">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name">💪 Воины Силы</div>
+                        <div class="guild-members">51 участник</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="joinGuild('power_warriors')">Присоединиться</button>
+                </div>
+                <p>Гильдия для решительных лидеров, готовых принимать сложные решения</p>
+                <p><strong>Требования:</strong> Сила 35+ | <strong>Бонус:</strong> Увеличенный опыт за смелые поступки</p>
+            </div>
+        </div>
+
+        <!-- Контент PvP дуэлей -->
+        <div class="game-content" id="pvp-content">
+            <div class="daily-limits">
+                <h3>📊 Дневные лимиты</h3>
+                <div class="limit-bar">
+                    <div class="limit-fill" id="daily-limit-fill" style="width: 0%"></div>
+                </div>
+                <p>Осталось вопросов сегодня: <span id="remaining-questions">20</span></p>
+                <p>Сброс через: <span id="reset-timer">00:00:00</span></p>
+            </div>
+
+            <div class="pvp-arena" id="pvp-arena" style="display: none;">
+                <div class="battle-animation">⚔️</div>
+                <h2 style="text-align: center; color: #FFD700; margin-bottom: 20px;">⚔️ МОРАЛЬНАЯ ДУЭЛЬ ⚔️</h2>
+                <div class="duel-participants">
+                    <div class="duel-player">
+                        <div class="duel-player-avatar" id="challenger-avatar">👤</div>
+                        <div class="duel-player-name" id="challenger-name">Боец 1</div>
+                        <div class="duel-score" id="challenger-score">0</div>
+                    </div>
+                    <div class="duel-vs">VS</div>
+                    <div class="duel-player">
+                        <div class="duel-player-avatar" id="target-avatar">👤</div>
+                        <div class="duel-player-name" id="target-name">Боец 2</div>
+                        <div class="duel-score" id="target-score">0</div>
+                    </div>
+                </div>
+                <div id="duel-question-container" style="display: none;">
+                    <div class="scene-text" id="duel-question-text"></div>
+                    <div class="options-container" id="duel-options-container"></div>
+                </div>
+            </div>
+
+            <div class="scene-container">
+                <div class="scene-text">
+                    🎯 <strong>PvP Дуэли</strong> - Бросайте вызовы другим игрокам в моральных поединках! 
+                    В дуэли 10 сложных вопросов, где каждый ответ оценивается по логике и скорости.
+                </div>
+                <div class="options-container">
+                    <button class="option-btn" onclick="showPvPChallenge()">
+                        🚀 Бросить вызов
+                    </button>
+                    <button class="option-btn" onclick="showPvPChallenges()">
+                        📋 Активные вызовы
+                    </button>
+                    <button class="option-btn" onclick="showPvPHistory()">
+                        📜 История дуэлей
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -756,7 +1007,7 @@
                 <div class="tournament-title">🔥 Испытание Мудрости</div>
                 <p>Еженедельный турнир на лучшие решения сложных моральных дилемм</p>
                 <div class="tournament-prize">🏆 Главный приз: 5,000 XP</div>
-                <button class="guild-join-btn" style="width: 100%; margin-top: 15px;">
+                <button class="guild-join-btn" style="width: 100%; margin-top: 15px;" onclick="joinTournament('weekly_wisdom')">
                     Участвовать
                 </button>
             </div>
@@ -783,6 +1034,7 @@
         // Игровые данные
         let gameData = {
             player: {
+                id: "player_" + Date.now(),
                 name: "Новичок",
                 level: 1,
                 xp: 0,
@@ -792,13 +1044,24 @@
                 honor: 0,
                 totalChoices: 0,
                 bossesDefeated: 0,
-                achievements: []
+                achievements: [],
+                coins: 1000,
+                currentGuild: null,
+                guildContribution: 0,
+                pvpWins: 0,
+                pvpLosses: 0,
+                tournamentWins: 0
             },
             currentScene: 0,
             gameStarted: false,
             dailyQuestProgress: 0,
-            isBossFight: false
+            isBossFight: false,
+            currentDuel: null,
+            currentTournament: null
         };
+
+        // Инициализация игровых систем
+        let pvpSystem, tournamentSystem, guildSystem, limitationSystem;
 
         // Сцены игры
         const gameScenes = [
@@ -1114,11 +1377,312 @@
         // Автосохранение каждые 30 секунд
         setInterval(saveGame, 30000);
 
+        // === PvP ФУНКЦИИ ===
+        function showPvPChallenge() {
+            const targetName = prompt("Введите имя игрока для вызова:");
+            if (!targetName) return;
+            
+            const bet = parseInt(prompt("Введите ставку XP (от 50 до 500):")) || 100;
+            if (bet < 50 || bet > 500) {
+                alert("Ставка должна быть от 50 до 500 XP");
+                return;
+            }
+            
+            if (gameData.player.xp < bet) {
+                alert("У вас недостаточно XP для такой ставки!");
+                return;
+            }
+            
+            const challenge = pvpSystem.createChallenge(gameData.player.name, targetName, bet);
+            alert(`Вызов отправлен игроку ${targetName} со ставкой ${bet} XP!`);
+        }
+
+        function showPvPChallenges() {
+            const challenges = pvpSystem.duelQueue.filter(c => c.target === gameData.player.name);
+            if (challenges.length === 0) {
+                alert("У вас нет активных вызовов");
+                return;
+            }
+            
+            let message = "Активные вызовы:\n";
+            challenges.forEach((challenge, index) => {
+                message += `${index + 1}. ${challenge.challenger} - ${challenge.bet} XP\n`;
+            });
+            
+            const choice = prompt(message + "\nВведите номер вызова для принятия (или 0 для отмены):");
+            if (choice && choice !== "0") {
+                const challengeIndex = parseInt(choice) - 1;
+                if (challengeIndex >= 0 && challengeIndex < challenges.length) {
+                    acceptPvPChallenge(challenges[challengeIndex].id);
+                }
+            }
+        }
+
+        function acceptPvPChallenge(challengeId) {
+            const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
+            if (duel) {
+                gameData.currentDuel = duel;
+                startPvPDuel(duel);
+            }
+        }
+
+        function startPvPDuel(duel) {
+            document.getElementById('pvp-arena').style.display = 'block';
+            document.getElementById('challenger-name').textContent = duel.challenger;
+            document.getElementById('target-name').textContent = duel.target;
+            document.getElementById('challenger-score').textContent = '0';
+            document.getElementById('target-score').textContent = '0';
+            
+            showNextDuelQuestion(duel);
+        }
+
+        function showNextDuelQuestion(duel) {
+            if (duel.currentQuestion >= duel.questions.length) {
+                finishDuel(duel);
+                return;
+            }
+            
+            const question = duel.questions[duel.currentQuestion];
+            document.getElementById('duel-question-text').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('duel-options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => answerDuelQuestion(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('duel-question-container').style.display = 'block';
+        }
+
+        function answerDuelQuestion(answerIndex) {
+            const startTime = Date.now();
+            const result = pvpSystem.answerDuelQuestion(gameData.currentDuel.id, gameData.player.name, answerIndex, 0);
+            
+            if (result.type === 'answer') {
+                // Обновляем счет
+                if (gameData.currentDuel.challenger === gameData.player.name) {
+                    gameData.currentDuel.challengerScore = result.currentScore;
+                    document.getElementById('challenger-score').textContent = result.currentScore;
+                } else {
+                    gameData.currentDuel.targetScore = result.currentScore;
+                    document.getElementById('target-score').textContent = result.currentScore;
+                }
+                
+                showFloatingText(`+${result.score}`, '#FF4500');
+                
+                setTimeout(() => {
+                    showNextDuelQuestion(gameData.currentDuel);
+                }, 2000);
+            } else if (result.type === 'finished') {
+                finishDuel(result);
+            }
+        }
+
+        function finishDuel(result) {
+            const isWinner = result.winner === gameData.player.name;
+            const message = isWinner ? 
+                `🏆 ПОБЕДА! Вы выиграли ${result.bet} XP!` : 
+                `💔 Поражение! Вы проиграли ${result.bet} XP`;
+            
+            if (isWinner) {
+                gameData.player.pvpWins++;
+                addXP(result.bet);
+            } else {
+                gameData.player.pvpLosses++;
+                gameData.player.xp = Math.max(0, gameData.player.xp - result.bet);
+            }
+            
+            alert(message);
+            document.getElementById('pvp-arena').style.display = 'none';
+            gameData.currentDuel = null;
+            updatePlayerUI();
+        }
+
+        function showPvPHistory() {
+            const wins = gameData.player.pvpWins;
+            const losses = gameData.player.pvpLosses;
+            const total = wins + losses;
+            const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+            
+            alert(`📊 История PvP дуэлей:\n\nПобеды: ${wins}\nПоражения: ${losses}\nВсего: ${total}\nПроцент побед: ${winRate}%`);
+        }
+
+        // === ТУРНИРНЫЕ ФУНКЦИИ ===
+        function joinTournament(tournamentId) {
+            const result = tournamentSystem.registerForTournament(tournamentId, gameData.player);
+            if (result) {
+                alert("Вы успешно зарегистрировались на турнир!");
+            } else {
+                alert("Не удалось зарегистрироваться. Проверьте требования турнира.");
+            }
+        }
+
+        // === ГИЛЬДЕЙСКИЕ ФУНКЦИИ ===
+        function joinGuild(guildId) {
+            const result = guildSystem.joinGuild(guildId, gameData.player);
+            if (result.success) {
+                gameData.player.currentGuild = guildId;
+                updateGuildUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
+        }
+
+        function leaveCurrentGuild() {
+            const result = guildSystem.leaveGuild(gameData.player.id);
+            if (result.success) {
+                gameData.player.currentGuild = null;
+                gameData.player.guildContribution = 0;
+                updateGuildUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
+        }
+
+        function contributeToGuild() {
+            if (!gameData.player.currentGuild) return;
+            
+            const result = guildSystem.contributeToGuild(gameData.player.id, 100);
+            if (result.success) {
+                gameData.player.guildContribution += 100;
+                gameData.player.xp = Math.max(0, gameData.player.xp - 100);
+                updateGuildUI();
+                updatePlayerUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
+        }
+
+        function updateGuildUI() {
+            const currentGuildInfo = document.getElementById('current-guild-info');
+            
+            if (gameData.player.currentGuild) {
+                const guild = guildSystem.guilds.get(gameData.player.currentGuild);
+                if (guild) {
+                    document.getElementById('current-guild-name').textContent = guild.name;
+                    document.getElementById('current-guild-members').textContent = `${guild.members.length} участников`;
+                    document.getElementById('current-guild-description').textContent = guild.description;
+                    document.getElementById('player-contribution').textContent = gameData.player.guildContribution;
+                    currentGuildInfo.style.display = 'block';
+                }
+            } else {
+                currentGuildInfo.style.display = 'none';
+            }
+        }
+
+        // === ФУНКЦИИ ЛИМИТОВ ===
+        function updateLimitsUI() {
+            const limits = limitationSystem.getLimitsInfo(gameData.player.id);
+            const remaining = limits.remaining;
+            const total = limits.limit;
+            
+            document.getElementById('remaining-questions').textContent = remaining;
+            document.getElementById('daily-limit-fill').style.width = ((total - remaining) / total * 100) + '%';
+            
+            // Обновляем таймер сброса
+            updateResetTimer();
+        }
+
+        function updateResetTimer() {
+            const timeUntilReset = limitationSystem.getTimeUntilReset(gameData.player.id);
+            const hours = Math.floor(timeUntilReset / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeUntilReset % (1000 * 60)) / 1000);
+            
+            document.getElementById('reset-timer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Обновляем функцию makeChoice для работы с лимитами
+        function makeChoice(optionIndex) {
+            // Проверяем лимиты
+            if (!limitationSystem.canAnswerQuestion(gameData.player.id)) {
+                alert("Вы исчерпали дневной лимит вопросов! Попробуйте завтра или участвуйте в PvP дуэлях!");
+                return;
+            }
+
+            const scene = gameScenes[gameData.currentScene];
+            const effect = scene.effects[optionIndex];
+            
+            // Применяем эффекты
+            gameData.player.power += effect.power || 0;
+            gameData.player.wisdom += effect.wisdom || 0;
+            gameData.player.honor += effect.honor || 0;
+            gameData.player.totalChoices++;
+            
+            // Записываем ответ в лимиты
+            limitationSystem.recordQuestionAnswer(gameData.player.id);
+            
+            // Проверяем бонусы гильдии
+            const guildBonus = guildSystem.getGuildBonus(gameData.player.id);
+            let xpGain = effect.xp || 30;
+            
+            if (guildBonus) {
+                if (guildBonus.honorMultiplier && effect.honor > 0) {
+                    xpGain = Math.floor(xpGain * guildBonus.honorMultiplier);
+                }
+                if (guildBonus.xpBonus) {
+                    xpGain += guildBonus.xpBonus;
+                }
+            }
+            
+            // Добавляем XP
+            addXP(xpGain);
+            
+            // Если это была босс-битва
+            if (gameData.isBossFight) {
+                gameData.player.bossesDefeated++;
+                showAchievement("⚔️ БОСС ПОБЕЖДЕН!", "Вы справились с серьезным испытанием!");
+            }
+            
+            // Обновляем прогресс ежедневного квеста
+            if (effect.wisdom > 10) {
+                gameData.dailyQuestProgress = Math.min(5, gameData.dailyQuestProgress + 1);
+                updateDailyQuest();
+            }
+            
+            // Показываем эффекты
+            if (effect.power > 0) showFloatingText(`+${effect.power} Сила`, '#ff6b35');
+            if (effect.wisdom > 0) showFloatingText(`+${effect.wisdom} Мудрость`, '#00aaff');
+            if (effect.honor > 0) showFloatingText(`+${effect.honor} Честь`, '#ffc107');
+            
+            updatePlayerUI();
+            updateLimitsUI();
+            checkAchievements();
+            
+            // Переходим к следующей сцене через 2 секунды
+            setTimeout(() => {
+                gameData.currentScene++;
+                nextScene();
+            }, 2000);
+        }
+
         // Инициализация
         window.addEventListener('load', () => {
             createStars();
             loadGame();
             initVKBridge();
+            
+            // Инициализируем игровые системы
+            pvpSystem = new GameSystems.PvPSystem();
+            tournamentSystem = new GameSystems.TournamentSystem();
+            guildSystem = new GameSystems.GuildSystem();
+            limitationSystem = new GameSystems.LimitationSystem();
+            
+            // Обновляем UI
+            updateGuildUI();
+            updateLimitsUI();
+            
+            // Запускаем таймер обновления
+            setInterval(updateResetTimer, 1000);
             
             setTimeout(() => {
                 document.body.classList.add('loaded');
