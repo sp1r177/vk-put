@@ -33,7 +33,7 @@ class LobbySystem {
     }
 
     // Создать публичный вызов
-    createPublicChallenge(player, bet, minLevel = 1) {
+    createPublicChallenge(player, bet, minLevel = 1, password = '') {
         const challenge = {
             id: Date.now() + Math.random(),
             challenger: player.id,
@@ -41,6 +41,8 @@ class LobbySystem {
             challengerLevel: player.level,
             bet: bet,
             minLevel: minLevel,
+            password: password, // Пароль для приватных вызовов
+            isPrivate: password.length > 0, // Приватный ли вызов
             status: 'active',
             createdAt: Date.now(),
             expiresAt: Date.now() + (30 * 60 * 1000) // 30 минут
@@ -52,10 +54,15 @@ class LobbySystem {
     }
 
     // Принять публичный вызов
-    acceptPublicChallenge(challengeId, player) {
+    acceptPublicChallenge(challengeId, player, password = '') {
         const challenge = this.activeChallenges.find(c => c.id === challengeId);
         if (!challenge || challenge.status !== 'active') {
             return null;
+        }
+
+        // Проверяем пароль для приватных вызовов
+        if (challenge.isPrivate && challenge.password !== password) {
+            return { error: 'Неверный пароль для этого вызова' };
         }
 
         // Проверяем уровень
@@ -90,7 +97,7 @@ class LobbySystem {
     }
 
     // Получить активные вызовы
-    getActiveChallenges() {
+    getActiveChallenges(searchTerm = '', showPrivate = true) {
         const now = Date.now();
         // Удаляем просроченные вызовы
         this.activeChallenges = this.activeChallenges.filter(c => 
@@ -98,7 +105,23 @@ class LobbySystem {
         );
         this.saveData();
         
-        return this.activeChallenges.filter(c => c.status === 'active');
+        let challenges = this.activeChallenges.filter(c => c.status === 'active');
+        
+        // Фильтруем по поиску
+        if (searchTerm) {
+            challenges = challenges.filter(c => 
+                c.challengerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                c.bet.toString().includes(searchTerm) ||
+                c.minLevel.toString().includes(searchTerm)
+            );
+        }
+        
+        // Фильтруем приватные вызовы
+        if (!showPrivate) {
+            challenges = challenges.filter(c => !c.isPrivate);
+        }
+        
+        return challenges;
     }
 
     // Записать результат дуэли
