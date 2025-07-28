@@ -1353,9 +1353,9 @@
                     <div class="scene-text" id="duel-question-text"></div>
                     <div class="options-container" id="duel-options-container"></div>
                 </div>
-            </div>
 
-            <!-- Лобби -->
+
+            <!-- Лобби (внутри PvP контента) -->
             <div class="lobby-section" id="lobby-section" style="display: none;">
                 <div class="lobby-header">
                     🏆 Игровое Лобби
@@ -1392,7 +1392,7 @@
                 <div id="public-challenges-list"></div>
             </div>
 
-            <!-- Рейтинги -->
+            <!-- Рейтинги (внутри PvP контента) -->
             <div class="lobby-section" id="ratings-section" style="display: none;">
                 <div class="lobby-header">
                     🏅 Рейтинг Дуэлянтов
@@ -1405,8 +1405,6 @@
                 </div>
                 <div id="ratings-list"></div>
             </div>
-
-            <div class="scene-container">
                 <div class="scene-text">
                     🎯 <strong>PvP Дуэли</strong> - Сражайтесь с игроками в моральных поединках! 
                     В дуэли 10 сложных вопросов, где каждый ответ оценивается по логике и скорости.
@@ -1954,6 +1952,14 @@
         }
 
         function createPublicChallenge() {
+            console.log('Создание публичного вызова...');
+            
+            // Проверяем доступность системы лобби
+            if (!lobbySystem || typeof lobbySystem.createPublicChallenge !== 'function') {
+                alert('Система лобби недоступна. Попробуйте перезагрузить страницу.');
+                return;
+            }
+            
             const maxBet = Math.min(500, gameData.player.xp);
             if (maxBet < 50) {
                 alert("У вас недостаточно XP для создания вызова! Нужно минимум 50 XP.");
@@ -1974,34 +1980,58 @@
             
             const password = prompt("Пароль для приватного вызова (оставьте пустым для публичного):") || '';
             
-            const challenge = lobbySystem.createPublicChallenge(gameData.player, bet, minLevel, password);
-            if (challenge) {
-                const type = password ? 'приватный' : 'публичный';
-                const passwordInfo = password ? `\nПароль: ${password}` : '';
-                alert(`🏆 ${type.charAt(0).toUpperCase() + type.slice(1)} вызов создан! Ставка: ${bet} XP, мин. уровень: ${minLevel}${passwordInfo}`);
-                showPublicChallenges();
+            try {
+                const result = lobbySystem.createPublicChallenge(gameData.player, bet, minLevel, password);
+                
+                if (result && result.error) {
+                    alert(`Ошибка: ${result.error}`);
+                } else if (result) {
+                    const type = password ? 'приватный' : 'публичный';
+                    const passwordInfo = password ? `\nПароль: ${password}` : '';
+                    alert(`🏆 ${type.charAt(0).toUpperCase() + type.slice(1)} вызов создан! Ставка: ${bet} XP, мин. уровень: ${minLevel}${passwordInfo}`);
+                    showPublicChallenges();
+                } else {
+                    alert('Не удалось создать вызов. Попробуйте еще раз.');
+                }
+            } catch (error) {
+                console.error('Ошибка создания вызова:', error);
+                alert('Произошла ошибка при создании вызова. Попробуйте еще раз.');
             }
         }
 
         function showPublicChallenges() {
-            const searchTerm = document.getElementById('lobby-search').value;
-            const showPrivate = document.getElementById('show-private').checked;
-            const challenges = lobbySystem.getActiveChallenges(searchTerm, showPrivate);
-            const challengesList = document.getElementById('public-challenges-list');
+            console.log('Показ публичных вызовов...');
             
-            if (challenges.length === 0) {
-                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет активных вызовов</p>';
+            // Проверяем доступность системы лобби
+            if (!lobbySystem || typeof lobbySystem.getActiveChallenges !== 'function') {
+                alert('Система лобби недоступна. Попробуйте перезагрузить страницу.');
                 return;
             }
             
-            let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">⚔️ Доступные вызовы</h4>';
-            challenges.forEach(challenge => {
-                if (challenge.challenger !== gameData.player.id) { // Не показываем свои вызовы
-                    html += createPublicChallengeItem(challenge);
+            try {
+                const searchTerm = document.getElementById('lobby-search').value;
+                const showPrivate = document.getElementById('show-private').checked;
+                const challenges = lobbySystem.getActiveChallenges(searchTerm, showPrivate);
+                const challengesList = document.getElementById('public-challenges-list');
+                
+                if (challenges.length === 0) {
+                    challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет активных вызовов</p>';
+                    return;
                 }
-            });
-            
-            challengesList.innerHTML = html;
+                
+                let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">⚔️ Доступные вызовы</h4>';
+                challenges.forEach(challenge => {
+                    if (challenge.challenger !== gameData.player.id) { // Не показываем свои вызовы
+                        html += createPublicChallengeItem(challenge);
+                    }
+                });
+                
+                challengesList.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка показа вызовов:', error);
+                document.getElementById('public-challenges-list').innerHTML = 
+                    '<p style="text-align: center; opacity: 0.7;">Ошибка загрузки вызовов</p>';
+            }
         }
 
         function createPublicChallengeItem(challenge) {
