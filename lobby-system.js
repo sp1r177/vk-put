@@ -10,11 +10,12 @@ class LobbySystem {
             monthly: []
         };
         this.loadData();
+        this.startGlobalSync();
     }
 
     // Загрузка данных из localStorage
     loadData() {
-        const savedChallenges = localStorage.getItem('lobby_challenges');
+        const savedChallenges = localStorage.getItem('global_lobby_challenges');
         const savedRatings = localStorage.getItem('lobby_ratings');
         
         if (savedChallenges) {
@@ -28,8 +29,37 @@ class LobbySystem {
 
     // Сохранение данных в localStorage
     saveData() {
-        localStorage.setItem('lobby_challenges', JSON.stringify(this.activeChallenges));
+        localStorage.setItem('global_lobby_challenges', JSON.stringify(this.activeChallenges));
         localStorage.setItem('lobby_ratings', JSON.stringify(this.ratings));
+    }
+
+    // Запуск глобальной синхронизации
+    startGlobalSync() {
+        // Проверяем обновления каждые 3 секунды
+        setInterval(() => {
+            this.syncWithGlobalStorage();
+        }, 3000);
+
+        // Слушаем изменения в localStorage других вкладок
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'global_lobby_challenges') {
+                this.loadData();
+                this.broadcastChallengeUpdate();
+            }
+        });
+    }
+
+    // Синхронизация с глобальным хранилищем
+    syncWithGlobalStorage() {
+        const globalChallenges = localStorage.getItem('global_lobby_challenges');
+        if (globalChallenges) {
+            const globalData = JSON.parse(globalChallenges);
+            // Обновляем только если данные изменились
+            if (JSON.stringify(this.activeChallenges) !== JSON.stringify(globalData)) {
+                this.activeChallenges = globalData;
+                this.broadcastChallengeUpdate();
+            }
+        }
     }
 
     // Проверить, есть ли уже активный вызов от игрока
