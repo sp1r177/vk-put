@@ -256,6 +256,24 @@
             margin-top: 10px;
         }
 
+        .app-link {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .app-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76,175,80,0.4);
+        }
+
         @media (max-width: 768px) {
             .slide {
                 padding: 30px;
@@ -290,13 +308,48 @@
                     <strong>Пользователи решают моральные дилеммы, соревнуются с друзьями и развивают критическое мышление</strong>
                 </div>
                 <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
-                    ✅ Рабочий прототип • 1000+ сценариев • Готов к запуску
+                    ✅ Рабочий MVP готов • 1000+ сценариев • Готов к запуску
                 </p>
+                <a href="https://vk.com/app53965701" target="_blank" class="app-link">
+                    🚀 ПОПРОБОВАТЬ ПРИЛОЖЕНИЕ
+                </a>
             </div>
         </div>
 
-        <!-- Слайд 2: Что пользователь может делать -->
+        <!-- Слайд 2: Рабочий MVP -->
         <div class="slide" id="slide2">
+            <div class="slide-title">📱 РАБОЧИЙ MVP</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🎮</div>
+                        <div class="feature-title">Полностью рабочий прототип</div>
+                        <div class="feature-desc">Приложение уже доступно в VK Mini Apps</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Готов к использованию</div>
+                        <div class="feature-desc">Все основные функции реализованы</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-title">Реальные пользователи</div>
+                        <div class="feature-desc">Приложение уже тестируется</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔧</div>
+                        <div class="feature-title">Готов к доработке</div>
+                        <div class="feature-desc">Нужна только финальная полировка</div>
+                    </div>
+                </div>
+                <a href="https://vk.com/app53965701" target="_blank" class="app-link">
+                    📱 ПОСМОТРЕТЬ MVP
+                </a>
+            </div>
+        </div>
+
+        <!-- Слайд 3: Что пользователь может делать -->
+        <div class="slide" id="slide3">
             <div class="slide-title">🎮 ЧТО ПОЛЬЗОВАТЕЛЬ МОЖЕТ ДЕЛАТЬ</div>
             <div class="slide-content">
                 <div class="feature-grid">
@@ -308,7 +361,7 @@
                     <div class="feature-item">
                         <div class="feature-icon">⚔️</div>
                         <div class="feature-title">PvP дуэли</div>
-                        <div class="feature-desc">Вызывать друзей на моральные поединки</div>
+                        <div class="feature-desc">Вызывать друзей на моральные поединки через VK API</div>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">🏆</div>
@@ -321,11 +374,14 @@
                         <div class="feature-desc">Объединяться с единомышленниками</div>
                     </div>
                 </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; color: #FFD700;">
+                    <strong>Все эти функции уже работают в MVP!</strong>
+                </p>
             </div>
         </div>
 
-        <!-- Слайд 3: Социальные механики -->
-        <div class="slide" id="slide3">
+        <!-- Слайд 4: Социальные механики -->
+        <div class="slide" id="slide4">
             <div class="slide-title">👥 СОЦИАЛЬНЫЕ МЕХАНИКИ</div>
             <div class="slide-content">
                 <div class="feature-grid">
@@ -353,18 +409,18 @@
             </div>
         </div>
 
-        <!-- Слайд 4: План создания проекта -->
-        <div class="slide" id="slide4">
+        <!-- Слайд 5: План создания проекта -->
+        <div class="slide" id="slide5">
             <div class="slide-title">📅 ПЛАН СОЗДАНИЯ ПРОЕКТА</div>
             <div class="slide-content">
                 <div class="timeline">
                     <div class="timeline-item">
                         <div class="timeline-month">Месяц 1</div>
-                        <div class="timeline-desc">Финальная доработка UI/UX, интеграция с VK API</div>
+                        <div class="timeline-desc">Финальная доработка UI/UX, добавление монетизации</div>
                     </div>
                     <div class="timeline-item">
                         <div class="timeline-month">Месяц 2</div>
-                        <div class="timeline-desc">Тестирование, модерация контента, запуск бета-версии</div>
+                        <div class="timeline-desc">Тестирование, модерация контента, бета-версия</div>
                     </div>
                     <div class="timeline-item">
                         <div class="timeline-month">Месяц 3</div>
@@ -377,14 +433,14 @@
             </div>
         </div>
 
-        <!-- Слайд 5: Монетизация (исправленная) -->
-        <div class="slide" id="slide5">
+        <!-- Слайд 6: Монетизация (денежная) -->
+        <div class="slide" id="slide6">
             <div class="slide-title">💰 МОДЕЛЬ МОНЕТИЗАЦИИ</div>
             <div class="slide-content">
                 <div class="feature-grid">
                     <div class="feature-item">
-                        <div class="feature-icon">🎁</div>
-                        <div class="feature-title">VK Голоса</div>
+                        <div class="feature-icon">💳</div>
+                        <div class="feature-title">Прямые платежи</div>
                         <div class="feature-desc">Премиум-контент, бустеры, косметика</div>
                     </div>
                     <div class="feature-item">
@@ -404,13 +460,13 @@
                     </div>
                 </div>
                 <p style="font-size: 1.2rem; margin-top: 30px; color: #FFD700;">
-                    <strong>Ожидаемый ARPU: 150₽/месяц • Конверсия: 8%</strong>
+                    <strong>Ожидаемый ARPU: 300₽/месяц • Конверсия: 8%</strong>
                 </p>
             </div>
         </div>
 
-        <!-- Слайд 6: Техническая реализация -->
-        <div class="slide" id="slide6">
+        <!-- Слайд 7: Техническая реализация -->
+        <div class="slide" id="slide7">
             <div class="slide-title">🔧 ТЕХНИЧЕСКАЯ РЕАЛИЗАЦИЯ</div>
             <div class="slide-content">
                 <div class="feature-grid">
@@ -438,8 +494,8 @@
             </div>
         </div>
 
-        <!-- Слайд 7: Контент и качество -->
-        <div class="slide" id="slide7">
+        <!-- Слайд 8: Контент и качество -->
+        <div class="slide" id="slide8">
             <div class="slide-title">📚 КОНТЕНТ И КАЧЕСТВО</div>
             <div class="slide-content">
                 <div class="stats">
@@ -466,8 +522,8 @@
             </div>
         </div>
 
-        <!-- Слайд 8: Метрики успеха -->
-        <div class="slide" id="slide8">
+        <!-- Слайд 9: Ожидаемые результаты -->
+        <div class="slide" id="slide9">
             <div class="slide-title">📊 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ</div>
             <div class="slide-content">
                 <div class="stats">
@@ -484,7 +540,7 @@
                         <div class="stat-label">D30 Retention</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">150₽</div>
+                        <div class="stat-number">300₽</div>
                         <div class="stat-label">ARPU</div>
                     </div>
                 </div>
@@ -494,8 +550,8 @@
             </div>
         </div>
 
-        <!-- Слайд 9: Социальное влияние -->
-        <div class="slide" id="slide9">
+        <!-- Слайд 10: Социальное влияние -->
+        <div class="slide" id="slide10">
             <div class="slide-title">🌟 СОЦИАЛЬНОЕ ВЛИЯНИЕ</div>
             <div class="slide-content">
                 <div class="feature-grid">
@@ -523,16 +579,19 @@
             </div>
         </div>
 
-        <!-- Слайд 10: Призыв к действию -->
-        <div class="slide" id="slide10">
+        <!-- Слайд 11: Призыв к действию -->
+        <div class="slide" id="slide11">
             <div class="slide-title">🏆 ПРИЗЫВ К ДЕЙСТВИЮ</div>
             <div class="slide-content">
                 <div class="mission-statement">
                     <strong style="font-size: 2rem;">Готовы создать первое мини-приложение для развития морального интеллекта!</strong>
                 </div>
                 <p style="font-size: 1.5rem; margin: 30px 0; color: #FFD700;">
-                    Рабочий прототип • Четкий план • Социальные механики • Правильная монетизация
+                    Рабочий MVP • Четкий план • Социальные механики • Правильная монетизация
                 </p>
+                <a href="https://vk.com/app53965701" target="_blank" class="app-link">
+                    🚀 ПОПРОБОВАТЬ MVP
+                </a>
                 <button class="cta-button" onclick="alert('Спасибо за внимание!')">
                     🚀 ПОДДЕРЖАТЬ ПРОЕКТ
                 </button>
@@ -551,7 +610,7 @@
 
     <!-- Счетчик слайдов -->
     <div class="slide-counter">
-        <span id="currentSlide">1</span> / <span id="totalSlides">10</span>
+        <span id="currentSlide">1</span> / <span id="totalSlides">11</span>
     </div>
 
     <script>
