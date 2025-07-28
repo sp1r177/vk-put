@@ -1824,14 +1824,50 @@
 
         // Инициализация VK Bridge
         function initVKBridge() {
+            console.log('Инициализация VK Bridge...');
+            
+            // Проверяем наличие vkBridge
             if (typeof vkBridge !== 'undefined') {
+                console.log('VK Bridge найден, инициализируем...');
                 vkBridge.send('VKWebAppInit');
                 
                 vkBridge.subscribe((e) => {
+                    console.log('VK Bridge событие:', e.detail.type);
                     if (e.detail.type === 'VKWebAppInitResult') {
-                        console.log('VK Bridge инициализирован');
+                        console.log('VK Bridge инициализирован успешно');
+                        // Загружаем данные пользователя
+                        loadVKUserData();
                     }
                 });
+            } else {
+                console.log('VK Bridge не найден, используем симуляцию');
+                // Создаем симуляцию для тестирования
+                window.vkBridge = {
+                    send: async (method, params = {}) => {
+                        console.log('VK API симуляция:', method, params);
+                        return { success: true, data: { id: 12345, first_name: 'Тест', last_name: 'Пользователь' } };
+                    }
+                };
+                loadVKUserData();
+            }
+        }
+
+        // Загрузка данных пользователя VK
+        async function loadVKUserData() {
+            try {
+                if (window.vkBridge) {
+                    const userResult = await window.vkBridge.send('VKWebAppGetUserInfo');
+                    console.log('Данные пользователя VK загружены:', userResult);
+                    
+                    // Обновляем данные игрока
+                    if (userResult.data) {
+                        gameData.player.name = `${userResult.data.first_name} ${userResult.data.last_name}`;
+                        gameData.player.id = userResult.data.id;
+                        updatePlayerUI();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных VK:', error);
             }
         }
 
@@ -2333,10 +2369,12 @@
 
         // Обновляем функцию makeChoice для работы с лимитами
         function makeChoice(optionIndex) {
-            // Проверяем лимиты
-            if (!limitationSystem.canAnswerQuestion(gameData.player.id)) {
-                alert("Вы исчерпали дневной лимит вопросов! Попробуйте завтра или участвуйте в PvP дуэлях!");
-                return;
+            // Проверяем лимиты (если система доступна)
+            if (limitationSystem && typeof limitationSystem.canAnswerQuestion === 'function') {
+                if (!limitationSystem.canAnswerQuestion(gameData.player.id)) {
+                    alert("Вы исчерпали дневной лимит вопросов! Попробуйте завтра или участвуйте в PvP дуэлях!");
+                    return;
+                }
             }
 
             const scene = gameScenes[gameData.currentScene];
@@ -2348,19 +2386,22 @@
             gameData.player.honor += effect.honor || 0;
             gameData.player.totalChoices++;
             
-            // Записываем ответ в лимиты
-            limitationSystem.recordQuestionAnswer(gameData.player.id);
+            // Записываем ответ в лимиты (если система доступна)
+            if (limitationSystem && typeof limitationSystem.recordQuestionAnswer === 'function') {
+                limitationSystem.recordQuestionAnswer(gameData.player.id);
+            }
             
-            // Проверяем бонусы гильдии
-            const guildBonus = guildSystem.getGuildBonus(gameData.player.id);
+            // Проверяем бонусы гильдии (если система доступна)
             let xpGain = effect.xp || 30;
-            
-            if (guildBonus) {
-                if (guildBonus.honorMultiplier && effect.honor > 0) {
-                    xpGain = Math.floor(xpGain * guildBonus.honorMultiplier);
-                }
-                if (guildBonus.xpBonus) {
-                    xpGain += guildBonus.xpBonus;
+            if (guildSystem && typeof guildSystem.getGuildBonus === 'function') {
+                const guildBonus = guildSystem.getGuildBonus(gameData.player.id);
+                if (guildBonus) {
+                    if (guildBonus.honorMultiplier && effect.honor > 0) {
+                        xpGain = Math.floor(xpGain * guildBonus.honorMultiplier);
+                    }
+                    if (guildBonus.xpBonus) {
+                        xpGain += guildBonus.xpBonus;
+                    }
                 }
             }
             
@@ -2385,7 +2426,7 @@
             if (effect.honor > 0) showFloatingText(`+${effect.honor} Честь`, '#ffc107');
             
             updatePlayerUI();
-            updateLimitsUI();
+            if (typeof updateLimitsUI === 'function') updateLimitsUI();
             checkAchievements();
             
             // Переходим к следующей сцене через 2 секунды
@@ -2397,28 +2438,80 @@
 
         // Инициализация
         window.addEventListener('load', () => {
+            console.log('Загрузка игры...');
             createStars();
             loadGame();
             initVKBridge();
             
-            // Инициализируем игровые системы
-            pvpSystem = new GameSystems.PvPSystem();
-            tournamentSystem = new GameSystems.TournamentSystem();
-            guildSystem = new GameSystems.GuildSystem();
-            limitationSystem = new GameSystems.LimitationSystem();
-            vkIntegration = new VKIntegration();
-            lobbySystem = new LobbySystem();
-            
-            // Обновляем UI
-            updateGuildUI();
-            updateLimitsUI();
-            
-            // Запускаем таймер обновления
-            setInterval(updateResetTimer, 1000);
-            
-            setTimeout(() => {
-                document.body.classList.add('loaded');
-            }, 2000);
+            // Инициализируем игровые системы с проверками
+            try {
+                if (typeof GameSystems !== 'undefined') {
+                    console.log('Инициализация игровых систем...');
+                    pvpSystem = new GameSystems.PvPSystem();
+                    tournamentSystem = new GameSystems.TournamentSystem();
+                    guildSystem = new GameSystems.GuildSystem();
+                    limitationSystem = new GameSystems.LimitationSystem();
+                } else {
+                    console.log('GameSystems не найден, создаем заглушки');
+                    // Создаем заглушки для систем
+                    pvpSystem = { 
+                        createChallenge: () => console.log('PvP система недоступна'),
+                        acceptChallenge: () => console.log('PvP система недоступна')
+                    };
+                    tournamentSystem = { 
+                        getActiveTournaments: () => [],
+                        joinTournament: () => console.log('Турниры недоступны')
+                    };
+                    guildSystem = { 
+                        getGuildBonus: () => null,
+                        joinGuild: () => console.log('Гильдии недоступны')
+                    };
+                    limitationSystem = { 
+                        canAnswerQuestion: () => true,
+                        recordQuestionAnswer: () => console.log('Лимиты недоступны')
+                    };
+                }
+                
+                if (typeof VKIntegration !== 'undefined') {
+                    vkIntegration = new VKIntegration();
+                } else {
+                    console.log('VKIntegration не найден, создаем заглушку');
+                    vkIntegration = { 
+                        loadUserData: () => console.log('VK интеграция недоступна')
+                    };
+                }
+                
+                if (typeof LobbySystem !== 'undefined') {
+                    lobbySystem = new LobbySystem();
+                } else {
+                    console.log('LobbySystem не найден, создаем заглушку');
+                    lobbySystem = { 
+                        getActiveChallenges: () => [],
+                        createPublicChallenge: () => ({ error: 'Лобби недоступно' })
+                    };
+                }
+                
+                console.log('Все системы инициализированы');
+                
+                // Обновляем UI
+                if (typeof updateGuildUI === 'function') updateGuildUI();
+                if (typeof updateLimitsUI === 'function') updateLimitsUI();
+                
+                // Запускаем таймер обновления
+                setInterval(updateResetTimer, 1000);
+                
+                setTimeout(() => {
+                    document.body.classList.add('loaded');
+                    console.log('Игра загружена успешно');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Ошибка инициализации игровых систем:', error);
+                // Показываем загрузочный экран даже при ошибке
+                setTimeout(() => {
+                    document.body.classList.add('loaded');
+                }, 2000);
+            }
         });
 
         // Сохранение при выходе
