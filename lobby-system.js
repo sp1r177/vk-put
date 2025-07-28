@@ -106,6 +106,9 @@ class LobbySystem {
 
     // Проверить, есть ли уже активный вызов от игрока
     hasActiveChallenge(playerId) {
+        // Принудительно очищаем неактивные вызовы
+        this.activeChallenges = this.activeChallenges.filter(c => c.status === 'active');
+        
         return this.activeChallenges.some(c => 
             c.challenger === playerId && c.status === 'active'
         );
