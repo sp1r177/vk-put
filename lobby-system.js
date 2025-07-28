@@ -69,14 +69,15 @@ class LobbySystem {
 
     // Запуск глобальной синхронизации
     startGlobalSync() {
-        // Проверяем обновления каждые 3 секунды
+        // Проверяем обновления каждые 1 секунду
         setInterval(() => {
             this.syncWithGlobalStorage();
-        }, 3000);
+        }, 1000);
 
         // Слушаем изменения в localStorage других вкладок
         window.addEventListener('storage', (e) => {
             if (e.key === 'global_lobby_challenges') {
+                console.log('Обнаружено изменение в localStorage');
                 this.loadData();
                 this.broadcastChallengeUpdate();
             }
@@ -98,7 +99,8 @@ class LobbySystem {
             }
         } else {
             // Если нет данных в localStorage, сохраняем текущие
-            this.saveData();
+            localStorage.setItem('global_lobby_challenges', JSON.stringify(this.activeChallenges));
+            console.log('Создан новый localStorage с', this.activeChallenges.length, 'вызовами');
         }
     }
 
@@ -130,8 +132,12 @@ class LobbySystem {
             expiresAt: Date.now() + (30 * 60 * 1000) // 30 минут
         };
 
+        console.log('Создаем вызов:', challenge);
         this.activeChallenges.push(challenge);
-        await this.saveData();
+        
+        // Принудительно сохраняем в localStorage
+        localStorage.setItem('global_lobby_challenges', JSON.stringify(this.activeChallenges));
+        console.log('Сохранено в localStorage:', this.activeChallenges.length, 'вызовов');
         
         // Обновляем данные в реальном времени для других игроков
         this.broadcastChallengeUpdate();
@@ -198,13 +204,25 @@ class LobbySystem {
     // Получить активные вызовы
     getActiveChallenges(searchTerm = '', showPrivate = true) {
         const now = Date.now();
+        
+        // Принудительно загружаем из localStorage
+        const storedChallenges = localStorage.getItem('global_lobby_challenges');
+        if (storedChallenges) {
+            try {
+                this.activeChallenges = JSON.parse(storedChallenges);
+                console.log('Загружено из localStorage:', this.activeChallenges.length, 'вызовов');
+            } catch (error) {
+                console.error('Ошибка парсинга localStorage:', error);
+            }
+        }
+        
         // Удаляем просроченные вызовы
         this.activeChallenges = this.activeChallenges.filter(c => 
             c.status === 'active' && c.expiresAt > now
         );
-        this.saveData();
         
         let challenges = this.activeChallenges.filter(c => c.status === 'active');
+        console.log('Активных вызовов после фильтрации:', challenges.length);
         
         // Фильтруем по поиску
         if (searchTerm) {
