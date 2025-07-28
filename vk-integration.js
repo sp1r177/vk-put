@@ -1,4 +1,4 @@
-// Интеграция с VK API для PvP системы
+// Интеграция с VK API для мини-приложения
 
 class VKIntegration {
     constructor() {
@@ -10,106 +10,106 @@ class VKIntegration {
     }
 
     // Инициализация VK Bridge
-    initVKBridge() {
-        if (typeof vkBridge !== 'undefined') {
-            this.vkBridge = vkBridge;
-            this.vkBridge.send('VKWebAppInit');
-            
-            this.vkBridge.subscribe((e) => {
-                if (e.detail.type === 'VKWebAppInitResult') {
-                    console.log('VK Bridge инициализирован');
-                    // НЕ загружаем данные автоматически - только по запросу
-                }
-            });
-        } else {
-            // Симуляция VK API для тестирования в браузере
-            console.log('VK Bridge не найден, используем симуляцию');
+    async initVKBridge() {
+        try {
+            if (window.vkBridge) {
+                this.vkBridge = window.vkBridge;
+                await this.vkBridge.send('VKWebAppInit');
+                console.log('VK Bridge инициализирован');
+                await this.loadUserData();
+            } else {
+                console.log('VK Bridge не найден, используем симуляцию');
+                this.simulateVKAPI();
+            }
+        } catch (error) {
+            console.error('Ошибка инициализации VK Bridge:', error);
             this.simulateVKAPI();
         }
     }
 
-    // Симуляция VK API для тестирования
+    // Симуляция VK API для локального тестирования
     simulateVKAPI() {
         this.vkBridge = {
             send: async (method, params = {}) => {
-                console.log('VK API симуляция:', method, params);
+                console.log(`Симуляция VK API: ${method}`, params);
                 
                 switch (method) {
+                    case 'VKWebAppInit':
+                        return { vk_platform: 'desktop_web' };
+                    
                     case 'VKWebAppGetUserInfo':
-                        return { data: { id: 12345, first_name: 'Тест', last_name: 'Пользователь' } };
+                        return {
+                            id: 123456789,
+                            first_name: 'Тестовый',
+                            last_name: 'Пользователь',
+                            photo_100: 'https://vk.com/images/camera_100.png',
+                            photo_200: 'https://vk.com/images/camera_200.png'
+                        };
                     
                     case 'VKWebAppGetFriends':
-                        return { 
-                            data: [
-                                { id: 1, first_name: 'Анна', last_name: 'Иванова' },
-                                { id: 2, first_name: 'Петр', last_name: 'Сидоров' },
-                                { id: 3, first_name: 'Мария', last_name: 'Козлова' },
-                                { id: 4, first_name: 'Дмитрий', last_name: 'Петров' },
-                                { id: 5, first_name: 'Елена', last_name: 'Смирнова' }
-                            ] 
+                        return {
+                            count: 2,
+                            items: [
+                                { id: 111111111, first_name: 'Друг', last_name: 'Один' },
+                                { id: 222222222, first_name: 'Друг', last_name: 'Два' }
+                            ]
                         };
                     
                     case 'VKWebAppGetAppUsers':
-                        return { data: [1, 3, 5] }; // Пользователи 1, 3, 5 в приложении
+                        return {
+                            count: 1,
+                            items: [111111111]
+                        };
                     
                     case 'VKWebAppShowInviteBox':
-                        alert('Симуляция: Приглашение отправлено через VK!');
                         return { success: true };
                     
                     case 'VKWebAppShowWallPostBox':
-                        alert('Симуляция: Результат опубликован на стене VK!');
-                        return { success: true };
+                        return { post_id: 12345 };
                     
                     default:
                         return { success: true };
                 }
             }
         };
-        
-        // НЕ загружаем данные автоматически
-        console.log('VK API симуляция готова');
     }
 
-    // Загрузка данных пользователя
+    // Загрузить данные пользователя
     async loadUserData() {
         try {
-            // Получаем информацию о текущем пользователе
             const userResult = await this.vkBridge.send('VKWebAppGetUserInfo');
-            this.currentUser = userResult.data;
-            
-            // Получаем список друзей
-            await this.loadFriends();
-            
-            // Получаем пользователей приложения
-            await this.loadAppUsers();
-            
-            console.log('Данные VK загружены:', this.currentUser);
+            this.currentUser = userResult;
+            console.log('Данные пользователя загружены:', this.currentUser);
+            return this.currentUser;
         } catch (error) {
-            console.error('Ошибка загрузки данных VK:', error);
+            console.error('Ошибка загрузки данных пользователя:', error);
+            return null;
         }
     }
 
-    // Загрузка списка друзей
+    // Загрузить список друзей
     async loadFriends() {
         try {
             const friendsResult = await this.vkBridge.send('VKWebAppGetFriends');
-            this.friends = friendsResult.data || [];
-            console.log('Друзья загружены:', this.friends.length);
+            this.friends = friendsResult.items || [];
+            console.log('Список друзей загружен:', this.friends.length);
+            return this.friends;
         } catch (error) {
             console.error('Ошибка загрузки друзей:', error);
-            this.friends = [];
+            return [];
         }
     }
 
-    // Загрузка пользователей приложения
+    // Загрузить пользователей приложения
     async loadAppUsers() {
         try {
             const appUsersResult = await this.vkBridge.send('VKWebAppGetAppUsers');
-            this.appUsers = appUsersResult.data || [];
+            this.appUsers = appUsersResult.items || [];
             console.log('Пользователи приложения загружены:', this.appUsers.length);
+            return this.appUsers;
         } catch (error) {
             console.error('Ошибка загрузки пользователей приложения:', error);
-            this.appUsers = [];
+            return [];
         }
     }
 
@@ -123,89 +123,105 @@ class VKIntegration {
         return this.friends.filter(friend => this.isUserInApp(friend.id));
     }
 
-    // Получить друзей, которые НЕ в приложении
+    // Получить друзей, которые не в приложении
     getNonAppFriends() {
         return this.friends.filter(friend => !this.isUserInApp(friend.id));
     }
 
-    // Пригласить друга в приложение
+    // Отправить приглашение другу
     async inviteFriend(friendId) {
         try {
             const result = await this.vkBridge.send('VKWebAppShowInviteBox');
             console.log('Приглашение отправлено:', result);
-            return result;
+            return true;
         } catch (error) {
             console.error('Ошибка отправки приглашения:', error);
-            return { error: 'Не удалось отправить приглашение' };
+            return false;
         }
     }
 
     // Отправить вызов на дуэль другу
     async sendDuelChallenge(friendId, bet) {
         try {
-            // Создаем вызов в локальной системе
+            // Проверяем, находится ли друг в приложении
+            const isInApp = this.isUserInApp(friendId);
+            
+            if (!isInApp) {
+                // Если друг не в приложении, предлагаем пригласить его
+                const shouldInvite = confirm("Этот друг не в игре. Хотите пригласить его?");
+                if (shouldInvite) {
+                    await this.inviteFriend(friendId);
+                }
+                return null;
+            }
+            
+            // Создаем вызов в нашей системе
             const challenge = {
                 id: Date.now() + Math.random(),
                 challenger: this.currentUser.id,
-                challengerName: `${this.currentUser.first_name} ${this.currentUser.last_name}`,
+                challengerName: this.currentUser.first_name + ' ' + this.currentUser.last_name,
                 target: friendId,
                 bet: bet,
                 status: 'pending',
                 createdAt: Date.now()
             };
 
-            // Сохраняем вызов
+            // Сохраняем вызов в localStorage (в реальном приложении - на сервере)
             this.saveChallenge(challenge);
 
-            // Отправляем уведомление через VK API
+            // Отправляем уведомление через VK
             await this.sendVKNotification(friendId, challenge);
-
+            
             return challenge;
         } catch (error) {
             console.error('Ошибка отправки вызова:', error);
-            return { error: 'Не удалось отправить вызов' };
+            return null;
         }
     }
 
-    // Отправить VK уведомление
+    // Отправить уведомление через VK
     async sendVKNotification(userId, challenge) {
         try {
-            // В реальном VK API здесь был бы вызов для отправки уведомления
-            // Но в мини-приложениях это ограничено, поэтому используем симуляцию
-            console.log('VK уведомление отправлено пользователю', userId);
+            // В реальном приложении здесь был бы вызов к VK API
+            // для отправки push-уведомления пользователю
+            console.log('Уведомление отправлено пользователю:', userId);
             
-            // Альтернативно можно использовать VK API для отправки сообщения
-            // Но это требует дополнительных разрешений
-            
-            return { success: true };
+            // Симуляция отправки уведомления
+            if (this.vkBridge.send.toString().includes('simulateVKAPI')) {
+                // В симуляции просто логируем
+                console.log(`Симуляция: Уведомление о дуэли отправлено пользователю ${userId}`);
+            } else {
+                // В реальном VK приложении здесь был бы вызов к VK API
+                // для отправки push-уведомления
+                console.log('VK API: Отправка push-уведомления о дуэли');
+            }
         } catch (error) {
-            console.error('Ошибка отправки VK уведомления:', error);
-            return { error: 'Не удалось отправить уведомление' };
+            console.error('Ошибка отправки уведомления:', error);
         }
     }
 
-    // Сохранить вызов локально
+    // Сохранить вызов
     saveChallenge(challenge) {
-        const challenges = JSON.parse(localStorage.getItem('vk_challenges') || '[]');
+        const challenges = JSON.parse(localStorage.getItem('vk_duel_challenges') || '[]');
         challenges.push(challenge);
-        localStorage.setItem('vk_challenges', JSON.stringify(challenges));
+        localStorage.setItem('vk_duel_challenges', JSON.stringify(challenges));
     }
 
     // Получить активные вызовы
     getActiveChallenges() {
-        const challenges = JSON.parse(localStorage.getItem('vk_challenges') || '[]');
-        return challenges.filter(c => c.status === 'pending' && c.target === this.currentUser.id);
+        const challenges = JSON.parse(localStorage.getItem('vk_duel_challenges') || '[]');
+        return challenges.filter(c => c.target === this.currentUser.id && c.status === 'pending');
     }
 
     // Принять вызов
     acceptChallenge(challengeId) {
-        const challenges = JSON.parse(localStorage.getItem('vk_challenges') || '[]');
+        const challenges = JSON.parse(localStorage.getItem('vk_duel_challenges') || '[]');
         const challenge = challenges.find(c => c.id === challengeId);
         
-        if (challenge && challenge.target === this.currentUser.id) {
+        if (challenge) {
             challenge.status = 'accepted';
             challenge.acceptedAt = Date.now();
-            localStorage.setItem('vk_challenges', JSON.stringify(challenges));
+            localStorage.setItem('vk_duel_challenges', JSON.stringify(challenges));
             return challenge;
         }
         
@@ -214,13 +230,13 @@ class VKIntegration {
 
     // Отклонить вызов
     declineChallenge(challengeId) {
-        const challenges = JSON.parse(localStorage.getItem('vk_challenges') || '[]');
+        const challenges = JSON.parse(localStorage.getItem('vk_duel_challenges') || '[]');
         const challenge = challenges.find(c => c.id === challengeId);
         
-        if (challenge && challenge.target === this.currentUser.id) {
+        if (challenge) {
             challenge.status = 'declined';
             challenge.declinedAt = Date.now();
-            localStorage.setItem('vk_challenges', JSON.stringify(challenges));
+            localStorage.setItem('vk_duel_challenges', JSON.stringify(challenges));
             return true;
         }
         
@@ -230,18 +246,10 @@ class VKIntegration {
     // Получить информацию о пользователе
     async getUserInfo(userId) {
         try {
-            // В реальном VK API здесь был бы запрос к API
-            // Но в мини-приложениях это ограничено
+            // В реальном приложении здесь был бы вызов к VK API
+            // для получения информации о пользователе
             const friend = this.friends.find(f => f.id === userId);
-            if (friend) {
-                return {
-                    id: friend.id,
-                    first_name: friend.first_name,
-                    last_name: friend.last_name,
-                    name: `${friend.first_name} ${friend.last_name}`
-                };
-            }
-            return null;
+            return friend || null;
         } catch (error) {
             console.error('Ошибка получения информации о пользователе:', error);
             return null;
@@ -251,25 +259,34 @@ class VKIntegration {
     // Поделиться результатом дуэли
     async shareDuelResult(result) {
         try {
-            const message = `🎯 Результат дуэли в "Моральный выбор"!\n\n` +
-                          `🏆 Победитель: ${result.winnerName}\n` +
-                          `💀 Проигравший: ${result.loserName}\n` +
-                          `💰 Ставка: ${result.bet} XP\n\n` +
-                          `Присоединяйся к игре и развивай свою моральную интуицию!`;
-
             const shareResult = await this.vkBridge.send('VKWebAppShowWallPostBox', {
-                message: message,
-                attachments: 'photo-123456_789012' // ID фото приложения
+                message: `Я ${result.winner ? 'победил' : 'проиграл'} в моральной дуэли! ${result.winner ? '🎉' : '😔'}`
             });
-
-            console.log('Результат опубликован:', shareResult);
+            console.log('Результат дуэли опубликован:', shareResult);
             return shareResult;
         } catch (error) {
-            console.error('Ошибка публикации результата:', error);
-            return { error: 'Не удалось опубликовать результат' };
+            console.error('Ошибка публикации результата дуэли:', error);
+            return null;
         }
+    }
+
+    // Получить текущего пользователя
+    getCurrentUser() {
+        return this.currentUser;
+    }
+
+    // Получить всех друзей
+    getAllFriends() {
+        return this.friends;
+    }
+
+    // Получить пользователей приложения
+    getAppUsers() {
+        return this.appUsers;
     }
 }
 
-// Создаем глобальный экземпляр
-window.vkIntegration = new VKIntegration(); 
+// Экспортируем для использования в других модулях
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = VKIntegration;
+} 

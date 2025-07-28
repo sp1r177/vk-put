@@ -10,7 +10,6 @@ class LobbySystem {
             monthly: []
         };
         this.loadData();
-        this.startSyncTimer();
     }
 
     // Загрузка данных из localStorage
@@ -33,18 +32,10 @@ class LobbySystem {
         localStorage.setItem('lobby_ratings', JSON.stringify(this.ratings));
     }
 
-    // Таймер для синхронизации данных между вкладками
-    startSyncTimer() {
-        setInterval(() => {
-            this.loadData(); // Перезагружаем данные каждые 2 секунды
-        }, 2000);
-    }
-
-    // Проверить, есть ли уже активный вызов от пользователя
+    // Проверить, есть ли уже активный вызов от игрока
     hasActiveChallenge(playerId) {
-        return this.activeChallenges.some(challenge => 
-            challenge.challenger === playerId && 
-            challenge.status === 'active'
+        return this.activeChallenges.some(c => 
+            c.challenger === playerId && c.status === 'active'
         );
     }
 
@@ -72,8 +63,8 @@ class LobbySystem {
         this.activeChallenges.push(challenge);
         this.saveData();
         
-        // Очищаем старые вызовы
-        this.cleanupOldChallenges();
+        // Обновляем данные в реальном времени для других игроков
+        this.broadcastChallengeUpdate();
         
         return challenge;
     }
@@ -83,11 +74,6 @@ class LobbySystem {
         const challenge = this.activeChallenges.find(c => c.id === challengeId);
         if (!challenge || challenge.status !== 'active') {
             return { error: 'Вызов не найден или уже неактивен' };
-        }
-
-        // Проверяем, что игрок не принимает свой собственный вызов
-        if (challenge.challenger === player.id) {
-            return { error: 'Вы не можете принять свой собственный вызов' };
         }
 
         // Проверяем пароль для приватных вызовов
@@ -105,12 +91,21 @@ class LobbySystem {
             return { error: 'Недостаточно XP для принятия вызова' };
         }
 
+        // Проверяем, не пытается ли игрок принять свой собственный вызов
+        if (challenge.challenger === player.id) {
+            return { error: 'Вы не можете принять свой собственный вызов' };
+        }
+
         challenge.status = 'accepted';
         challenge.acceptor = player.id;
         challenge.acceptorName = player.name;
         challenge.acceptedAt = Date.now();
 
         this.saveData();
+        
+        // Обновляем данные в реальном времени
+        this.broadcastChallengeUpdate();
+        
         return challenge;
     }
 
@@ -121,6 +116,10 @@ class LobbySystem {
             challenge.status = 'cancelled';
             challenge.cancelledAt = Date.now();
             this.saveData();
+            
+            // Обновляем данные в реальном времени
+            this.broadcastChallengeUpdate();
+            
             return true;
         }
         return false;
@@ -128,196 +127,169 @@ class LobbySystem {
 
     // Получить активные вызовы
     getActiveChallenges(searchTerm = '', showPrivate = true) {
-        let challenges = this.activeChallenges.filter(challenge => 
-            challenge.status === 'active' && 
-            challenge.expiresAt > Date.now()
+        const now = Date.now();
+        // Удаляем просроченные вызовы
+        this.activeChallenges = this.activeChallenges.filter(c => 
+            c.status === 'active' && c.expiresAt > now
         );
-
-        // Фильтруем приватные вызовы
-        if (!showPrivate) {
-            challenges = challenges.filter(challenge => !challenge.isPrivate);
-        }
-
-        // Фильтруем по поисковому запросу
+        this.saveData();
+        
+        let challenges = this.activeChallenges.filter(c => c.status === 'active');
+        
+        // Фильтруем по поиску
         if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            challenges = challenges.filter(challenge => 
-                challenge.challengerName.toLowerCase().includes(term) ||
-                challenge.bet.toString().includes(term)
+            challenges = challenges.filter(c => 
+                c.challengerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                c.bet.toString().includes(searchTerm) ||
+                c.minLevel.toString().includes(searchTerm)
             );
         }
-
-        // Сортируем по времени создания (новые сверху)
-        challenges.sort((a, b) => b.createdAt - a.createdAt);
-
+        
+        // Фильтруем приватные вызовы
+        if (!showPrivate) {
+            challenges = challenges.filter(c => !c.isPrivate);
+        }
+        
         return challenges;
     }
 
-    // Очистка старых вызовов
-    cleanupOldChallenges() {
-        const now = Date.now();
-        this.activeChallenges = this.activeChallenges.filter(challenge => 
-            challenge.expiresAt > now || challenge.status === 'accepted'
-        );
-        this.saveData();
-    }
-
-    // Получить вызовы пользователя
-    getUserChallenges(playerId) {
-        return this.activeChallenges.filter(challenge => 
-            challenge.challenger === playerId
-        );
+    // Обновить данные в реальном времени
+    broadcastChallengeUpdate() {
+        // В реальном приложении здесь был бы WebSocket или Server-Sent Events
+        // Для MVP используем localStorage как источник истины
+        localStorage.setItem('lobby_last_update', Date.now().toString());
+        
+        // Вызываем событие для обновления UI
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('lobbyUpdate', {
+                detail: { challenges: this.activeChallenges }
+            }));
+        }
     }
 
     // Записать результат дуэли
     recordDuelResult(winner, loser, bet) {
-        const result = {
-            winner: winner.id,
-            winnerName: winner.name,
-            loser: loser.id,
-            loserName: loser.name,
-            bet: bet,
-            timestamp: Date.now()
-        };
+        const now = Date.now();
+        const today = new Date().toDateString();
+        const weekStart = this.getWeekStart();
+        const monthStart = this.getMonthStart();
 
         // Обновляем рейтинги
-        this.updateRating(this.ratings.daily, winner, loser, bet, 'daily');
-        this.updateRating(this.ratings.weekly, winner, loser, bet, 'weekly');
-        this.updateRating(this.ratings.monthly, winner, loser, bet, 'monthly');
+        this.updateRating(this.ratings.daily, winner, loser, bet, today);
+        this.updateRating(this.ratings.weekly, winner, loser, bet, weekStart);
+        this.updateRating(this.ratings.monthly, winner, loser, bet, monthStart);
 
         this.saveData();
-        return result;
     }
 
-    // Обновление рейтинга
+    // Обновить рейтинг
     updateRating(ratingArray, winner, loser, bet, period) {
-        const now = Date.now();
-        const periodStart = this.getPeriodStart(period);
+        // Находим или создаем записи для игроков
+        let winnerRecord = ratingArray.find(r => r.playerId === winner.id && r.period === period);
+        let loserRecord = ratingArray.find(r => r.playerId === loser.id && r.period === period);
 
-        // Очищаем старые записи
-        ratingArray = ratingArray.filter(record => record.timestamp >= periodStart);
-
-        // Добавляем новую запись
-        ratingArray.push({
-            winner: winner.id,
-            winnerName: winner.name,
-            loser: loser.id,
-            loserName: loser.name,
-            bet: bet,
-            timestamp: now
-        });
-
-        // Обновляем соответствующий массив
-        this.ratings[period] = ratingArray;
-    }
-
-    // Получить начало периода
-    getPeriodStart(period) {
-        const now = new Date();
-        switch (period) {
-            case 'daily':
-                return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-            case 'weekly':
-                return this.getWeekStart();
-            case 'monthly':
-                return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            default:
-                return now.getTime();
+        if (!winnerRecord) {
+            winnerRecord = {
+                playerId: winner.id,
+                playerName: winner.name,
+                period: period,
+                wins: 0,
+                losses: 0,
+                totalBet: 0,
+                rating: 1000
+            };
+            ratingArray.push(winnerRecord);
         }
+
+        if (!loserRecord) {
+            loserRecord = {
+                playerId: loser.id,
+                playerName: loser.name,
+                period: period,
+                wins: 0,
+                losses: 0,
+                totalBet: 0,
+                rating: 1000
+            };
+            ratingArray.push(loserRecord);
+        }
+
+        // Обновляем статистику
+        winnerRecord.wins++;
+        winnerRecord.totalBet += bet;
+        winnerRecord.rating += 25;
+
+        loserRecord.losses++;
+        loserRecord.totalBet += bet;
+        loserRecord.rating = Math.max(0, loserRecord.rating - 15);
+
+        // Сортируем по рейтингу
+        ratingArray.sort((a, b) => b.rating - a.rating);
     }
 
     // Получить начало недели
     getWeekStart() {
         const now = new Date();
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        return new Date(now.setDate(diff)).getTime();
+        const dayOfWeek = now.getDay();
+        const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        return new Date(now.setDate(diff)).toDateString();
+    }
+
+    // Получить начало месяца
+    getMonthStart() {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1).toDateString();
     }
 
     // Получить топ игроков
     getTopPlayers(period = 'daily', limit = 10) {
-        const records = this.ratings[period] || [];
-        const playerStats = {};
-
-        // Подсчитываем статистику для каждого игрока
-        records.forEach(record => {
-            if (!playerStats[record.winner]) {
-                playerStats[record.winner] = { wins: 0, losses: 0, totalBet: 0, name: record.winnerName };
-            }
-            if (!playerStats[record.loser]) {
-                playerStats[record.loser] = { wins: 0, losses: 0, totalBet: 0, name: record.loserName };
-            }
-
-            playerStats[record.winner].wins++;
-            playerStats[record.winner].totalBet += record.bet;
-            playerStats[record.loser].losses++;
-            playerStats[record.loser].totalBet += record.bet;
-        });
-
-        // Преобразуем в массив и сортируем
-        const topPlayers = Object.entries(playerStats)
-            .map(([id, stats]) => ({
-                id: parseInt(id),
-                name: stats.name,
-                wins: stats.wins,
-                losses: stats.losses,
-                totalBet: stats.totalBet,
-                winRate: stats.wins / (stats.wins + stats.losses)
-            }))
-            .sort((a, b) => b.winRate - a.winRate || b.totalBet - a.totalBet)
-            .slice(0, limit);
-
-        return topPlayers;
+        const ratings = this.ratings[period] || [];
+        return ratings.slice(0, limit);
     }
 
     // Получить статистику игрока
     getPlayerStats(playerId) {
         const stats = {
-            daily: { wins: 0, losses: 0, totalBet: 0 },
-            weekly: { wins: 0, losses: 0, totalBet: 0 },
-            monthly: { wins: 0, losses: 0, totalBet: 0 }
+            daily: this.ratings.daily.find(r => r.playerId === playerId),
+            weekly: this.ratings.weekly.find(r => r.playerId === playerId),
+            monthly: this.ratings.monthly.find(r => r.playerId === playerId)
         };
 
-        ['daily', 'weekly', 'monthly'].forEach(period => {
-            const records = this.ratings[period] || [];
-            records.forEach(record => {
-                if (record.winner === playerId) {
-                    stats[period].wins++;
-                    stats[period].totalBet += record.bet;
-                } else if (record.loser === playerId) {
-                    stats[period].losses++;
-                    stats[period].totalBet += record.bet;
-                }
-            });
-        });
-
-        return stats;
+        return {
+            daily: stats.daily || { wins: 0, losses: 0, rating: 1000 },
+            weekly: stats.weekly || { wins: 0, losses: 0, rating: 1000 },
+            monthly: stats.monthly || { wins: 0, losses: 0, rating: 1000 }
+        };
     }
 
     // Очистка старых данных
     cleanupOldData() {
         const now = Date.now();
-        const dayMs = 24 * 60 * 60 * 1000;
-        const weekMs = 7 * dayMs;
-        const monthMs = 30 * dayMs;
-
-        // Очищаем старые записи рейтингов
-        this.ratings.daily = this.ratings.daily.filter(record => 
-            now - record.timestamp < dayMs
-        );
-        this.ratings.weekly = this.ratings.weekly.filter(record => 
-            now - record.timestamp < weekMs
-        );
-        this.ratings.monthly = this.ratings.monthly.filter(record => 
-            now - record.timestamp < monthMs
-        );
+        const oneDayAgo = now - (24 * 60 * 60 * 1000);
+        const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
+        const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
 
         // Очищаем старые вызовы
-        this.cleanupOldChallenges();
+        this.activeChallenges = this.activeChallenges.filter(c => 
+            c.createdAt > oneDayAgo || c.status === 'active'
+        );
+
+        // Очищаем старые рейтинги
+        this.ratings.daily = this.ratings.daily.filter(r => 
+            new Date(r.period).getTime() > oneDayAgo
+        );
+        this.ratings.weekly = this.ratings.weekly.filter(r => 
+            new Date(r.period).getTime() > oneWeekAgo
+        );
+        this.ratings.monthly = this.ratings.monthly.filter(r => 
+            new Date(r.period).getTime() > oneMonthAgo
+        );
 
         this.saveData();
     }
 }
 
-// Создаем глобальный экземпляр
-window.lobbySystem = new LobbySystem(); 
+// Экспортируем для использования в других модулях
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = LobbySystem;
+} 
