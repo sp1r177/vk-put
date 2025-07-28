@@ -88,6 +88,11 @@
             font-weight: bold;
         }
 
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
         .stats {
             display: flex;
             justify-content: space-around;
@@ -215,46 +220,40 @@
             box-shadow: 0 15px 40px rgba(255,215,0,0.4);
         }
 
-        .competitor-table {
-            width: 100%;
-            max-width: 800px;
+        .demo-screenshot {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
             margin: 20px 0;
+            text-align: center;
         }
 
-        .competitor-table th,
-        .competitor-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .competitor-table th {
-            background: rgba(255,215,0,0.2);
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        .monetization-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+        .timeline {
+            display: flex;
+            justify-content: space-between;
             width: 100%;
-            max-width: 1000px;
+            margin: 30px 0;
         }
 
-        .monetization-item {
+        .timeline-item {
+            text-align: center;
             background: rgba(255,255,255,0.1);
             padding: 20px;
             border-radius: 15px;
-            text-align: center;
-            backdrop-filter: blur(5px);
+            flex: 1;
+            margin: 0 10px;
         }
 
-        .monetization-price {
-            font-size: 2rem;
+        .timeline-month {
+            font-size: 1.5rem;
             font-weight: bold;
             color: #FFD700;
-            margin-bottom: 10px;
+        }
+
+        .timeline-desc {
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin-top: 10px;
         }
 
         @media (max-width: 768px) {
@@ -277,10 +276,6 @@
             .feature-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .monetization-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -289,268 +284,193 @@
         <!-- Слайд 1: Заголовок -->
         <div class="slide active" id="slide1">
             <div class="slide-title">🎯 МОРАЛЬНЫЙ ВЫБОР</div>
-            <div class="slide-subtitle">VK Dev Grants | Мини-приложение ВКонтакте</div>
+            <div class="slide-subtitle">Мини-приложение ВКонтакте</div>
             <div class="slide-content">
                 <div class="mission-statement">
-                    <strong>Первое мини-приложение ВКонтакте, которое развивает моральную интуицию через игровые механики</strong>
+                    <strong>Пользователи решают моральные дилеммы, соревнуются с друзьями и развивают критическое мышление</strong>
                 </div>
                 <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
-                    Тренажер для души • 1000+ сценариев • PvP дуэли • Система рейтингов
+                    ✅ Рабочий прототип • 1000+ сценариев • Готов к запуску
                 </p>
             </div>
         </div>
 
-        <!-- Слайд 2: Основные механики -->
+        <!-- Слайд 2: Что пользователь может делать -->
         <div class="slide" id="slide2">
-            <div class="slide-title">🎮 ОСНОВНЫЕ МЕХАНИКИ</div>
+            <div class="slide-title">🎮 ЧТО ПОЛЬЗОВАТЕЛЬ МОЖЕТ ДЕЛАТЬ</div>
             <div class="slide-content">
                 <div class="feature-grid">
                     <div class="feature-item">
                         <div class="feature-icon">🧠</div>
-                        <div class="feature-title">500+ моральных дилемм</div>
-                        <div class="feature-desc">От бытовых ситуаций до экстремальных</div>
+                        <div class="feature-title">Решать дилеммы</div>
+                        <div class="feature-desc">20 моральных вопросов в день с подробным анализом</div>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">⚔️</div>
                         <div class="feature-title">PvP дуэли</div>
-                        <div class="feature-desc">Моральные поединки с друзьями</div>
+                        <div class="feature-desc">Вызывать друзей на моральные поединки</div>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">🏆</div>
-                        <div class="feature-title">Турнирная система</div>
-                        <div class="feature-desc">Еженедельные и месячные соревнования</div>
+                        <div class="feature-title">Участвовать в турнирах</div>
+                        <div class="feature-desc">Еженедельные соревнования с призами</div>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">🏰</div>
-                        <div class="feature-title">Гильдии</div>
-                        <div class="feature-desc">Сообщества единомышленников</div>
+                        <div class="feature-title">Создавать гильдии</div>
+                        <div class="feature-desc">Объединяться с единомышленниками</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Слайд 3: УТП и конкуренты -->
+        <!-- Слайд 3: Социальные механики -->
         <div class="slide" id="slide3">
-            <div class="slide-title">🌟 УТП И КОНКУРЕНТЫ</div>
+            <div class="slide-title">👥 СОЦИАЛЬНЫЕ МЕХАНИКИ</div>
             <div class="slide-content">
-                <div class="mission-statement">
-                    <strong>"Тренажер для души" - единственное приложение, развивающее моральную интуицию</strong>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🤝</div>
+                        <div class="feature-title">Приглашения друзей</div>
+                        <div class="feature-desc">Отправка вызовов через VK API</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Рейтинги и достижения</div>
+                        <div class="feature-desc">Сравнение с друзьями в реальном времени</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-title">Обсуждения решений</div>
+                        <div class="feature-desc">Комментарии к каждому выбору</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎁</div>
+                        <div class="feature-title">Реферальная программа</div>
+                        <div class="feature-desc">Бонусы за приглашение друзей</div>
+                    </div>
                 </div>
-                <table class="competitor-table">
-                    <thead>
-                        <tr>
-                            <th>Конкуренты</th>
-                            <th>Проблемы</th>
-                            <th>Наши преимущества</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Обычные тесты</td>
-                            <td>Статичные, без прогрессии</td>
-                            <td>Геймификация развития</td>
-                        </tr>
-                        <tr>
-                            <td>Психологические приложения</td>
-                            <td>Сложные, не игровые</td>
-                            <td>Социальное взаимодействие</td>
-                        </tr>
-                        <tr>
-                            <td>Социальные игры</td>
-                            <td>Поверхностные, без глубины</td>
-                            <td>Реальное развитие личности</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
 
-        <!-- Слайд 4: Целевая аудитория -->
+        <!-- Слайд 4: План создания проекта -->
         <div class="slide" id="slide4">
-            <div class="slide-title">👥 ЦЕЛЕВАЯ АУДИТОРИЯ</div>
+            <div class="slide-title">📅 ПЛАН СОЗДАНИЯ ПРОЕКТА</div>
+            <div class="slide-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-month">Месяц 1</div>
+                        <div class="timeline-desc">Финальная доработка UI/UX, интеграция с VK API</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-month">Месяц 2</div>
+                        <div class="timeline-desc">Тестирование, модерация контента, запуск бета-версии</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-month">Месяц 3</div>
+                        <div class="timeline-desc">Публичный запуск, маркетинг, сбор обратной связи</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; color: #FFD700;">
+                    <strong>Готовность к запуску: 90% • Время до релиза: 3 месяца</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 5: Монетизация (исправленная) -->
+        <div class="slide" id="slide5">
+            <div class="slide-title">💰 МОДЕЛЬ МОНЕТИЗАЦИИ</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🎁</div>
+                        <div class="feature-title">VK Голоса</div>
+                        <div class="feature-desc">Премиум-контент, бустеры, косметика</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💎</div>
+                        <div class="feature-title">Внутриигровая валюта</div>
+                        <div class="feature-desc">Турнирные билеты, гильдейские бонусы</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-title">Турниры с призами</div>
+                        <div class="feature-desc">Еженедельные соревнования за реальные призы</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🤝</div>
+                        <div class="feature-title">Партнерства</div>
+                        <div class="feature-desc">B2B решения для корпоративных тренингов</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; color: #FFD700;">
+                    <strong>Ожидаемый ARPU: 150₽/месяц • Конверсия: 8%</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Слайд 6: Техническая реализация -->
+        <div class="slide" id="slide6">
+            <div class="slide-title">🔧 ТЕХНИЧЕСКАЯ РЕАЛИЗАЦИЯ</div>
+            <div class="slide-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-title">VK Mini Apps</div>
+                        <div class="feature-desc">Полная интеграция с VK API</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Современный UI</div>
+                        <div class="feature-desc">Адаптивный дизайн, анимации</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Быстрая загрузка</div>
+                        <div class="feature-desc">Оптимизация под мобильные устройства</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">Безопасность</div>
+                        <div class="feature-desc">Защита данных, модерация контента</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 7: Контент и качество -->
+        <div class="slide" id="slide7">
+            <div class="slide-title">📚 КОНТЕНТ И КАЧЕСТВО</div>
             <div class="slide-content">
                 <div class="stats">
                     <div class="stat-item">
-                        <div class="stat-number">16-35</div>
-                        <div class="stat-label">Возраст</div>
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">Уникальных дилемм</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">97M+</div>
-                        <div class="stat-label">ВКонтакте</div>
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Категорий</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">15-20M</div>
-                        <div class="stat-label">Целевая аудитория</div>
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Уровней сложности</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">2-3M</div>
-                        <div class="stat-label">Потенциальные игроки</div>
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Модерация</div>
                     </div>
                 </div>
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">🧠</div>
-                        <div class="feature-title">Саморазвитие (40%)</div>
-                        <div class="feature-desc">18-25 лет, развитие критического мышления</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🎮</div>
-                        <div class="feature-title">Социальные игроки (35%)</div>
-                        <div class="feature-desc">16-22 года, соревнование с друзьями</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🔍</div>
-                        <div class="feature-title">Любопытные (25%)</div>
-                        <div class="feature-desc">25-35 лет, интерес к психологии</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Слайд 5: План продвижения -->
-        <div class="slide" id="slide5">
-            <div class="slide-title">📈 ПЛАН ПРОДВИЖЕНИЯ</div>
-            <div class="slide-content">
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">🚀</div>
-                        <div class="feature-title">Этап 1: Запуск</div>
-                        <div class="feature-desc">
-                            • VK Mini Apps Store<br>
-                            • Социальные сети<br>
-                            • Партнерства с блогерами
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">📱</div>
-                        <div class="feature-title">Этап 2: Рост</div>
-                        <div class="feature-desc">
-                            • Вирусный маркетинг<br>
-                            • Реферальная программа<br>
-                            • Еженедельные турниры
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🎯</div>
-                        <div class="feature-title">Этап 3: Масштабирование</div>
-                        <div class="feature-desc">
-                            • Образовательные платформы<br>
-                            • B2B решения<br>
-                            • Международная экспансия
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Слайд 6: Монетизация -->
-        <div class="slide" id="slide6">
-            <div class="slide-title">💰 СТРАТЕГИЯ МОНЕТИЗАЦИИ</div>
-            <div class="slide-content">
-                <div class="monetization-grid">
-                    <div class="monetization-item">
-                        <div class="monetization-price">Бесплатно</div>
-                        <div class="feature-title">Базовые функции</div>
-                        <div class="feature-desc">
-                            • 20 вопросов в день<br>
-                            • Базовые PvP дуэли<br>
-                            • Участие в турнирах
-                        </div>
-                    </div>
-                    <div class="monetization-item">
-                        <div class="monetization-price">299₽/мес</div>
-                        <div class="feature-title">Premium подписка</div>
-                        <div class="feature-desc">
-                            • Безлимитные вопросы<br>
-                            • Премиум сценарии<br>
-                            • Расширенная аналитика
-                        </div>
-                    </div>
-                    <div class="monetization-item">
-                        <div class="monetization-price">Микротранзакции</div>
-                        <div class="feature-title">Дополнительные покупки</div>
-                        <div class="feature-desc">
-                            • Бустеры XP (99₽)<br>
-                            • Турнирные билеты (149₽)<br>
-                            • Специальные сценарии (79₽)
-                        </div>
-                    </div>
-                </div>
-                <div class="stats" style="margin-top: 30px;">
-                    <div class="stat-item">
-                        <div class="stat-number">100K</div>
-                        <div class="stat-label">Пользователей</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">5%</div>
-                        <div class="stat-label">Конверсия в Premium</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">450₽</div>
-                        <div class="stat-label">ARPU</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">27M₽</div>
-                        <div class="stat-label">Годовой доход</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Слайд 7: Дизайн и прототип -->
-        <div class="slide" id="slide7">
-            <div class="slide-title">🎨 ДИЗАЙН И ПРОТОТИП</div>
-            <div class="slide-content">
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">🎨</div>
-                        <div class="feature-title">Визуальный стиль</div>
-                        <div class="feature-desc">
-                            • Минималистичный дизайн<br>
-                            • Темная тема<br>
-                            • Градиентные акценты
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">📱</div>
-                        <div class="feature-title">Пользовательский интерфейс</div>
-                        <div class="feature-desc">
-                            • Интуитивная навигация<br>
-                            • Быстрые действия<br>
-                            • Визуальная обратная связь
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🎮</div>
-                        <div class="feature-title">Игровые элементы</div>
-                        <div class="feature-desc">
-                            • Система уровней<br>
-                            • Достижения<br>
-                            • Рейтинги
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🔧</div>
-                        <div class="feature-title">Техническая реализация</div>
-                        <div class="feature-desc">
-                            • VK Mini Apps API<br>
-                            • Responsive Design<br>
-                            • Offline режим
-                        </div>
-                    </div>
-                </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
+                    Еженедельные обновления • Экспертная проверка • Адаптация под возраст
+                </p>
             </div>
         </div>
 
         <!-- Слайд 8: Метрики успеха -->
         <div class="slide" id="slide8">
-            <div class="slide-title">📊 МЕТРИКИ УСПЕХА</div>
+            <div class="slide-title">📊 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ</div>
             <div class="slide-content">
                 <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number">500K+</div>
-                        <div class="stat-label">Установки</div>
-                    </div>
                     <div class="stat-item">
                         <div class="stat-number">65%</div>
                         <div class="stat-label">D1 Retention</div>
@@ -563,60 +483,42 @@
                         <div class="stat-number">30%</div>
                         <div class="stat-label">D30 Retention</div>
                     </div>
-                </div>
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">⏱️</div>
-                        <div class="feature-title">15+ минут</div>
-                        <div class="feature-desc">Время в приложении за сессию</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🎯</div>
-                        <div class="feature-title">50+ ответов</div>
-                        <div class="feature-desc">Количество ответов в неделю</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">⚔️</div>
-                        <div class="feature-title">30%</div>
-                        <div class="feature-desc">PvP участие</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🏆</div>
-                        <div class="feature-title">20%</div>
-                        <div class="feature-desc">Турнирная активность</div>
+                    <div class="stat-item">
+                        <div class="stat-number">150₽</div>
+                        <div class="stat-label">ARPU</div>
                     </div>
                 </div>
+                <p style="font-size: 1.2rem; margin-top: 30px; opacity: 0.9;">
+                    Цель: 50,000 активных пользователей за 6 месяцев
+                </p>
             </div>
         </div>
 
-        <!-- Слайд 9: Конкурентные преимущества -->
+        <!-- Слайд 9: Социальное влияние -->
         <div class="slide" id="slide9">
-            <div class="slide-title">🚀 КОНКУРЕНТНЫЕ ПРЕИМУЩЕСТВА</div>
+            <div class="slide-title">🌟 СОЦИАЛЬНОЕ ВЛИЯНИЕ</div>
             <div class="slide-content">
                 <div class="feature-grid">
                     <div class="feature-item">
+                        <div class="feature-icon">🧠</div>
+                        <div class="feature-title">Развитие критического мышления</div>
+                        <div class="feature-desc">Улучшение навыков принятия решений</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💝</div>
+                        <div class="feature-title">Обучение эмпатии</div>
+                        <div class="feature-desc">Понимание разных точек зрения</div>
+                    </div>
+                    <div class="feature-item">
                         <div class="feature-icon">🎯</div>
-                        <div class="feature-title">Уникальная механика</div>
-                        <div class="feature-desc">Моральные дилеммы как основа игры</div>
+                        <div class="feature-title">Мотивация к самосовершенствованию</div>
+                        <div class="feature-desc">Система достижений и прогрессии</div>
                     </div>
                     <div class="feature-item">
                         <div class="feature-icon">🌍</div>
-                        <div class="feature-title">Социальность</div>
-                        <div class="feature-desc">PvP дуэли с друзьями и незнакомцами</div>
+                        <div class="feature-title">Объединение вокруг ценностей</div>
+                        <div class="feature-desc">Создание сообществ единомышленников</div>
                     </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🧠</div>
-                        <div class="feature-title">Развитие личности</div>
-                        <div class="feature-desc">Реальные навыки принятия решений</div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">📈</div>
-                        <div class="feature-title">Долгосрочная мотивация</div>
-                        <div class="feature-desc">Система достижений и прогрессии</div>
-                    </div>
-                </div>
-                <div class="mission-statement">
-                    <strong>Мы создаем не просто игру, а инструмент для развития человечности</strong>
                 </div>
             </div>
         </div>
@@ -626,20 +528,16 @@
             <div class="slide-title">🏆 ПРИЗЫВ К ДЕЙСТВИЮ</div>
             <div class="slide-content">
                 <div class="mission-statement">
-                    <strong style="font-size: 2rem;">"Моральный выбор" - инновационное решение для VK Dev Grants!</strong>
+                    <strong style="font-size: 2rem;">Готовы создать первое мини-приложение для развития морального интеллекта!</strong>
                 </div>
                 <p style="font-size: 1.5rem; margin: 30px 0; color: #FFD700;">
-                    ✅ Решает реальную социальную проблему<br>
-                    ✅ Использует проверенные игровые механики<br>
-                    ✅ Интегрирован в VK экосистему<br>
-                    ✅ Имеет четкую монетизацию<br>
-                    ✅ Масштабируется на международные рынки
+                    Рабочий прототип • Четкий план • Социальные механики • Правильная монетизация
                 </p>
-                <button class="cta-button" onclick="alert('Спасибо за внимание! Мы готовы создать приложение, которое изменит мир!')">
-                    🚀 ПОДАТЬ ЗАЯВКУ НА ГРАНТ
+                <button class="cta-button" onclick="alert('Спасибо за внимание!')">
+                    🚀 ПОДДЕРЖАТЬ ПРОЕКТ
                 </button>
                 <p style="font-size: 1rem; margin-top: 30px; opacity: 0.8; font-style: italic;">
-                    Готовы создать приложение, которое изменит то, как люди думают о моральных решениях
+                    Создано с ❤️ для развития человечности в каждом из нас
                 </p>
             </div>
         </div>
