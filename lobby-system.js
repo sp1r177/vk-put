@@ -87,12 +87,18 @@ class LobbySystem {
     syncWithGlobalStorage() {
         const globalChallenges = localStorage.getItem('global_lobby_challenges');
         if (globalChallenges) {
-            const globalData = JSON.parse(globalChallenges);
-            // Обновляем только если данные изменились
-            if (JSON.stringify(this.activeChallenges) !== JSON.stringify(globalData)) {
-                this.activeChallenges = globalData;
+            try {
+                const globalData = JSON.parse(globalChallenges);
+                // Принудительно обновляем активные вызовы
+                this.activeChallenges = globalData.filter(c => c.status === 'active');
+                console.log('Синхронизация: загружено', this.activeChallenges.length, 'активных вызовов');
                 this.broadcastChallengeUpdate();
+            } catch (error) {
+                console.error('Ошибка синхронизации:', error);
             }
+        } else {
+            // Если нет данных в localStorage, сохраняем текущие
+            this.saveData();
         }
     }
 
