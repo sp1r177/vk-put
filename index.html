@@ -2468,53 +2468,75 @@
 
         // Инициализация
         window.addEventListener('load', () => {
-            console.log('Загрузка игры...');
+            console.log('=== ЗАГРУЗКА ИГРЫ ===');
+            console.log('1. Создание звезд...');
             createStars();
+            console.log('2. Загрузка игровых данных...');
             loadGame();
+            console.log('3. Инициализация VK Bridge...');
             initVKBridge();
             
+            // Проверяем загрузку всех скриптов
+            console.log('4. Проверка загрузки скриптов...');
+            const scripts = [
+                'GameSystems', 'VKIntegration', 'LobbySystem', 
+                'gameScenes', 'pvpScenes', 'additionalScenes'
+            ];
+            
+            scripts.forEach(scriptName => {
+                if (typeof window[scriptName] !== 'undefined') {
+                    console.log(`✅ ${scriptName} загружен`);
+                } else {
+                    console.log(`❌ ${scriptName} НЕ загружен`);
+                }
+            });
+            
             // Инициализируем игровые системы с проверками
+            console.log('5. Инициализация игровых систем...');
             try {
                 if (typeof GameSystems !== 'undefined') {
-                    console.log('Инициализация игровых систем...');
+                    console.log('✅ GameSystems найден, создаем системы...');
                     pvpSystem = new GameSystems.PvPSystem();
                     tournamentSystem = new GameSystems.TournamentSystem();
                     guildSystem = new GameSystems.GuildSystem();
                     limitationSystem = new GameSystems.LimitationSystem();
+                    console.log('✅ Все игровые системы созданы');
                 } else {
-                    console.log('GameSystems не найден, создаем заглушки');
+                    console.log('❌ GameSystems не найден, создаем заглушки');
                     // Создаем заглушки для систем
                     pvpSystem = { 
-                        createChallenge: () => console.log('PvP система недоступна'),
-                        acceptChallenge: () => console.log('PvP система недоступна')
+                        createChallenge: () => { console.log('PvP система недоступна'); return false; },
+                        acceptChallenge: () => { console.log('PvP система недоступна'); return false; }
                     };
                     tournamentSystem = { 
                         getActiveTournaments: () => [],
-                        joinTournament: () => console.log('Турниры недоступны')
+                        joinTournament: () => { console.log('Турниры недоступны'); return false; }
                     };
                     guildSystem = { 
                         getGuildBonus: () => null,
-                        joinGuild: () => console.log('Гильдии недоступны')
+                        joinGuild: () => { console.log('Гильдии недоступны'); return false; }
                     };
                     limitationSystem = { 
                         canAnswerQuestion: () => true,
-                        recordQuestionAnswer: () => console.log('Лимиты недоступны')
+                        recordQuestionAnswer: () => { console.log('Лимиты недоступны'); }
                     };
                 }
                 
                 if (typeof VKIntegration !== 'undefined') {
+                    console.log('✅ VKIntegration найден');
                     vkIntegration = new VKIntegration();
                 } else {
-                    console.log('VKIntegration не найден, создаем заглушку');
+                    console.log('❌ VKIntegration не найден, создаем заглушку');
                     vkIntegration = { 
-                        loadUserData: () => console.log('VK интеграция недоступна')
+                        loadUserData: () => { console.log('VK интеграция недоступна'); return false; }
                     };
                 }
                 
                 if (typeof LobbySystem !== 'undefined') {
+                    console.log('✅ LobbySystem найден');
                     lobbySystem = new LobbySystem();
                 } else {
-                    console.log('LobbySystem не найден, создаем заглушку');
+                    console.log('❌ LobbySystem не найден, создаем заглушку');
                     lobbySystem = { 
                         getActiveChallenges: () => [],
                         createPublicChallenge: () => ({ error: 'Лобби недоступно' })
@@ -2527,6 +2549,20 @@
                 if (typeof updateGuildUI === 'function') updateGuildUI();
                 if (typeof updateLimitsUI === 'function') updateLimitsUI();
                 
+                // Проверяем основные функции игры
+                console.log('6. Проверка основных функций...');
+                const coreFunctions = [
+                    'nextScene', 'makeChoice', 'showSection', 'loadGame', 'saveGame'
+                ];
+                
+                coreFunctions.forEach(funcName => {
+                    if (typeof window[funcName] === 'function') {
+                        console.log(`✅ ${funcName} доступна`);
+                    } else {
+                        console.log(`❌ ${funcName} НЕ доступна`);
+                    }
+                });
+                
                 // Запускаем таймер обновления
                 setInterval(updateResetTimer, 1000);
                 
@@ -2537,6 +2573,37 @@
                 
             } catch (error) {
                 console.error('Ошибка инициализации игровых систем:', error);
+                
+                // Резервная инициализация для мобильной версии
+                console.log('Запуск резервной инициализации...');
+                
+                // Создаем базовые заглушки
+                if (!pvpSystem) pvpSystem = { 
+                    createChallenge: () => { alert('PvP временно недоступно'); return false; },
+                    acceptChallenge: () => { alert('PvP временно недоступно'); return false; }
+                };
+                if (!tournamentSystem) tournamentSystem = { 
+                    getActiveTournaments: () => [],
+                    joinTournament: () => { alert('Турниры временно недоступны'); return false; }
+                };
+                if (!guildSystem) guildSystem = { 
+                    getGuildBonus: () => null,
+                    joinGuild: () => { alert('Гильдии временно недоступны'); return false; }
+                };
+                if (!limitationSystem) limitationSystem = { 
+                    canAnswerQuestion: () => true,
+                    recordQuestionAnswer: () => {}
+                };
+                if (!vkIntegration) vkIntegration = { 
+                    loadUserData: () => { console.log('VK интеграция недоступна'); }
+                };
+                if (!lobbySystem) lobbySystem = { 
+                    getActiveChallenges: () => [],
+                    createPublicChallenge: () => ({ error: 'Лобби временно недоступно' })
+                };
+                
+                console.log('Резервная инициализация завершена');
+                
                 // Показываем загрузочный экран даже при ошибке
                 setTimeout(() => {
                     document.body.classList.add('loaded');
