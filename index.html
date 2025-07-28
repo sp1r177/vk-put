@@ -137,7 +137,6 @@
             background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(0,122,255,0.1));
             border-bottom: 2px solid rgba(0,255,136,0.3);
             position: relative;
-            flex-shrink: 0;
         }
 
         .player-info {
@@ -184,10 +183,6 @@
 
         .stat-item {
             text-align: center;
-            background: rgba(255,255,255,0.1);
-            padding: 8px 12px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
         }
 
         .stat-value {
@@ -198,236 +193,950 @@
 
         .stat-label {
             font-size: 12px;
-            color: #ccc;
-            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        /* XP Bar */
+        .xp-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
         .xp-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .xp-fill {
             height: 100%;
             background: linear-gradient(90deg, #00ff88, #00aaff);
-            border-radius: 4px;
-            transition: width 0.3s ease;
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
         }
 
-        /* Игровое меню */
-        .game-menu {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 15px;
+        .xp-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: xp-shimmer 2s infinite;
         }
 
-        .menu-section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+        @keyframes xp-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
-        .section-title {
-            font-size: 18px;
+        .xp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
             font-weight: bold;
-            color: #00ff88;
-            margin-bottom: 15px;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+        }
+
+        /* Навигация */
+        .game-nav {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
         }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .menu-item {
-            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,170,255,0.1));
-            border: 1px solid rgba(0,255,136,0.3);
+        .nav-btn {
+            flex: 1;
+            padding: 10px 8px;
+            background: linear-gradient(45deg, rgba(0,255,136,0.1), rgba(0,122,255,0.1));
+            border: 2px solid rgba(0,255,136,0.3);
             border-radius: 12px;
-            padding: 20px;
-            text-align: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
 
-        .menu-item:hover {
+        .nav-btn:hover {
+            background: linear-gradient(45deg, rgba(0,255,136,0.3), rgba(0,122,255,0.3));
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,255,136,0.2);
-            border-color: rgba(0,255,136,0.5);
+            box-shadow: 0 10px 20px rgba(0,255,136,0.2);
         }
 
-        .menu-item:active {
-            transform: translateY(0);
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
 
-        .menu-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
+        .nav-btn:hover::before {
+            left: 100%;
         }
 
-        .menu-text {
-            font-size: 14px;
-            font-weight: 500;
+        /* Экран игры */
+        .game-content {
+            flex: 1;
+            padding: 15px;
+            display: none;
         }
 
-        /* Лобби */
-        .lobby-section {
-            margin-top: 20px;
+        .game-content.active {
+            display: block;
         }
 
-        .challenge-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Босс арена */
+        .boss-arena {
+            background: linear-gradient(135deg, #660000, #330000);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #ff6b35;
+        }
+
+        .boss-arena::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,107,53,0.1), transparent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .boss-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #ff6b35;
             margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255,107,53,0.5);
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            color: #ccc;
-        }
-
-        .form-input {
-            padding: 12px;
+        /* Сцена игры */
+        .scene-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 16px;
+            position: relative;
         }
 
-        .form-input:focus {
-            outline: none;
-            border-color: #00ff88;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .scene-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
             text-align: center;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #00ff88, #00aaff);
-            color: #000;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,255,136,0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .challenges-list {
+        .options-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .challenge-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
+        .option-btn {
+            background: linear-gradient(45deg, rgba(0,255,136,0.1), rgba(0,122,255,0.1));
+            border: 2px solid rgba(0,255,136,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover {
+            background: linear-gradient(45deg, rgba(0,255,136,0.3), rgba(0,122,255,0.3));
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0,255,136,0.3);
+        }
+
+        /* Лидерборд */
+        .leaderboard {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .leaderboard-header {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ff88;
+        }
+
+        .leader-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .leader-rank {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-right: 15px;
+        }
+
+        .leader-info {
+            flex: 1;
+        }
+
+        .leader-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .leader-level {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .leader-score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        /* Гильдии */
+        .guild-card {
+            background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,255,136,0.1));
+            border-radius: 20px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 2px solid rgba(0,122,255,0.3);
+        }
+
+        .guild-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .guild-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00aaff;
+        }
+
+        .guild-members {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .guild-join-btn {
+            background: linear-gradient(45deg, #00aaff, #00ff88);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .guild-join-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,170,255,0.4);
+        }
+
+        /* Турниры */
+        .tournament-card {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,193,7,0.1));
+            border-radius: 20px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 2px solid rgba(255,107,53,0.3);
+            position: relative;
+        }
+
+        .tournament-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff6b35;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tournament-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+
+        .tournament-prize {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffc107;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        /* Эффекты и анимации */
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: float-up 2s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.2);
+            }
+        }
+
+        .particle-effect {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ff88;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle-burst 1s ease-out forwards;
+        }
+
+        @keyframes particle-burst {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-100px);
+            }
+        }
+
+        /* Достижения */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ffc107, #ff6b35);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255,193,7,0.4);
+            transform: translateX(400px);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+
+        .achievement-popup.show {
+            transform: translateX(0);
+        }
+
+        .achievement-icon {
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* Ежедневные квесты */
+        .daily-quest {
+            background: linear-gradient(135deg, rgba(156,39,176,0.1), rgba(103,58,183,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .quest-title {
+            font-weight: bold;
+            color: #9c27b0;
+            margin-bottom: 10px;
+        }
+
+        .quest-progress {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .challenge-info {
+        .quest-bar {
+            flex: 1;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+
+        .quest-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9c27b0, #673ab7);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .quest-reward {
+            font-weight: bold;
+            color: #ffc107;
+        }
+
+        /* PvP Дуэли */
+        .pvp-arena {
+            background: linear-gradient(135deg, #8B0000, #4B0082);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px solid #FF4500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pvp-arena::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,69,0,0.1), transparent);
+            animation: pvp-pulse 1.5s infinite;
+        }
+
+        @keyframes pvp-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .duel-participants {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .duel-player {
+            text-align: center;
             flex: 1;
         }
 
-        .challenge-name {
+        .duel-player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 10px;
+            border: 3px solid #FFD700;
+        }
+
+        .duel-vs {
+            font-size: 24px;
             font-weight: bold;
-            color: #00ff88;
+            color: #FFD700;
+            margin: 0 20px;
+        }
+
+        .duel-score {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4500;
+        }
+
+        .battle-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            animation: battle-spin 2s infinite;
+        }
+
+        @keyframes battle-spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        /* Турнирные стили */
+        .tournament-bracket {
+            background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,107,53,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #FFC107;
+        }
+
+        .tournament-match {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .match-player {
+            flex: 1;
+            text-align: center;
+        }
+
+        .match-score {
+            font-weight: bold;
+            color: #FFC107;
+            margin: 0 15px;
+        }
+
+        /* Гильдейские стили */
+        .guild-member {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .member-rank {
+            background: linear-gradient(45deg, #FFC107, #FF6B35);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Лимиты */
+        .daily-limits {
+            background: linear-gradient(135deg, rgba(156,39,176,0.1), rgba(103,58,183,0.1));
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #9C27B0;
+        }
+
+        .limit-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .limit-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9C27B0, #673AB7);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Список друзей */
+        .friends-section {
+            background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,255,136,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #00A2FF;
+        }
+
+        .friends-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00A2FF;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 8px 0;
+            border: 1px solid rgba(0,162,255,0.2);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00A2FF, #00FF88);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .friend-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .friend-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-btn {
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            color: white;
+        }
+
+        .challenge-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(255,69,0,0.3);
+        }
+
+        .invite-btn {
+            background: linear-gradient(45deg, #00A2FF, #00FF88);
+            color: white;
+        }
+
+        .invite-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(0,162,255,0.3);
+        }
+
+        .app-user {
+            border-color: #00FF88;
+            background: rgba(0,255,136,0.1);
+        }
+
+        .non-app-user {
+            border-color: #FFA500;
+            background: rgba(255,165,0,0.1);
+        }
+
+        /* Стили для лобби */
+        .lobby-section {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,193,7,0.1));
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #FF6B35;
+        }
+
+        .lobby-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF6B35;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .public-challenge {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,107,53,0.3);
+        }
+
+        .challenge-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .challenger-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .challenger-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FF6B35, #FFC107);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .challenge-details {
+            text-align: right;
         }
 
         .challenge-bet {
-            font-size: 14px;
-            color: #ccc;
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFC107;
+        }
+
+        .challenge-level {
+            font-size: 12px;
+            opacity: 0.8;
         }
 
         .challenge-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            justify-content: flex-end;
         }
 
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 14px;
+        .rating-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .rating-tab {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rating-tab.active {
+            background: linear-gradient(45deg, #FF6B35, #FFC107);
+        }
+
+        .rating-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin: 5px 0;
+        }
+
+        .rating-rank {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FFC107;
+            margin-right: 10px;
+        }
+
+        .rating-player {
+            flex: 1;
+        }
+
+        .rating-stats {
+            text-align: right;
+            font-size: 12px;
         }
 
         /* Адаптивность */
         @media (max-width: 768px) {
             .game-header {
+                padding: 15px;
+            }
+            
+            .player-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .player-stats {
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            .game-nav {
+                flex-direction: column;
+                gap: 8px;
+                padding: 15px;
+            }
+            
+            .nav-btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .scene-text {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            
+            .option-btn {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .duel-participants {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .duel-vs {
+                margin: 10px 0;
+            }
+            
+            .friend-item {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .friend-actions {
+                justify-content: center;
+            }
+            
+            .guild-card, .tournament-card {
+                padding: 20px;
+            }
+            
+            .boss-arena, .scene-container {
+                padding: 20px;
+                margin: 15px 0;
+            }
+        }
+
+        /* Дополнительные стили для мобильных устройств */
+        @media (max-width: 480px) {
+            .game-header {
                 padding: 10px;
             }
-
+            
             .player-avatar {
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
             }
-
-            .menu-grid {
-                grid-template-columns: 1fr;
+            
+            .level-badge {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
             }
-
-            .game-menu {
-                padding: 15px;
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+            }
+            
+            .game-nav {
+                padding: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px;
+                font-size: 13px;
+            }
+            
+            .scene-text {
+                font-size: 15px;
+            }
+            
+            .option-btn {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .boss-title, .leaderboard-header {
+                font-size: 20px;
+            }
+            
+            .guild-name, .tournament-title {
+                font-size: 18px;
             }
         }
 
-        /* Скрываем прокрутку для VK Mini App */
-        @media (max-width: 480px) {
-            .game-container {
-                height: 100vh;
-                overflow-y: auto;
-            }
+        /* Исправление скролла */
+        body {
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        .main-screen {
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .game-content {
+            padding-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <!-- Загрузочный экран -->
-    <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <h2>Загрузка игры...</h2>
-            <p>Подготовка к путешествию</p>
+            <h2>Загружается Путь Героя...</h2>
+            <p>Подготовка эпического приключения</p>
         </div>
     </div>
 
@@ -435,313 +1144,1286 @@
     <div class="stars" id="stars"></div>
 
     <!-- Основной контейнер с прокруткой -->
-    <div class="game-container" id="gameContainer">
+    <div class="game-container">
         <!-- Главный экран -->
-        <div class="main-screen" id="mainScreen">
-            <!-- Заголовок игры -->
-            <div class="game-header">
-                <div class="player-info">
-                    <div class="player-avatar" id="playerAvatar">
-                        <span id="playerInitial">Г</span>
-                        <div class="level-badge" id="playerLevel">1</div>
+        <div class="main-screen" id="main-screen">
+        <!-- Шапка игры -->
+        <div class="game-header">
+            <div class="player-info">
+                <div class="player-avatar" id="player-avatar">
+                    👤
+                    <div class="level-badge" id="player-level">1</div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="player-power">0</div>
+                        <div class="stat-label">Сила</div>
                     </div>
-                    <div class="player-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="playerXP">0</div>
-                            <div class="stat-label">XP</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="playerLevelValue">1</div>
-                            <div class="stat-label">Уровень</div>
-                        </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="player-wisdom">0</div>
+                        <div class="stat-label">Мудрость</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="player-honor">0</div>
+                        <div class="stat-label">Честь</div>
                     </div>
                 </div>
-                <div class="xp-bar">
-                    <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+            </div>
+            <div class="xp-container">
+                <div class="xp-bar" id="xp-bar" style="width: 0%">
+                    <div class="xp-text" id="xp-text">0 / 100 XP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Навигация -->
+        <div class="game-nav">
+            <button class="nav-btn" onclick="showSection('adventure')">
+                🗡️ Приключения
+            </button>
+            <button class="nav-btn" onclick="showSection('pvp')">
+                ⚔️ PvP Дуэли
+            </button>
+            <button class="nav-btn" onclick="showSection('leaderboard')">
+                🏆 Рейтинг
+            </button>
+            <button class="nav-btn" onclick="showSection('guilds')">
+                ⚔️ Гильдии
+            </button>
+            <button class="nav-btn" onclick="showSection('tournaments')">
+                👑 Турниры
+            </button>
+        </div>
+
+        <!-- Контент приключений -->
+        <div class="game-content active" id="adventure-content">
+            <div class="daily-quest">
+                <div class="quest-title">📅 Ежедневный квест: Мудрые решения</div>
+                <div class="quest-progress">
+                    <div class="quest-bar">
+                        <div class="quest-fill" id="daily-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="quest-reward">+200 XP</div>
+                </div>
+                <p>Примите 5 мудрых решений (0/5)</p>
+            </div>
+
+            <div class="boss-arena" id="boss-arena" style="display: none;">
+                <div class="boss-title">⚡ БОСС: Жизненный Кризис</div>
+                <p style="text-align: center; margin-bottom: 20px;">
+                    Вы столкнулись с серьезным испытанием! Ваш выбор определит исход битвы!
+                </p>
+            </div>
+
+            <div class="scene-container" id="scene-container">
+                <div class="scene-text" id="scene-text">
+                    Добро пожаловать в "Путь Героя"! Здесь каждое решение формирует вашу судьбу. 
+                    Прокачивайте характеристики, сражайтесь с боссами жизненных ситуаций, 
+                    соревнуйтесь с друзьями и станьте легендой!
+                </div>
+                <div class="options-container" id="options-container">
+                    <button class="option-btn" onclick="startFirstAdventure()">
+                        🚀 Начать первое приключение
+                    </button>
+                    <button class="option-btn" onclick="showTutorial()">
+                        📚 Обучение игре
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контент рейтинга -->
+        <div class="game-content" id="leaderboard-content">
+            <div class="leaderboard">
+                <div class="leaderboard-header">🏆 Топ Героев</div>
+                <div class="leader-item">
+                    <div class="leader-rank">1</div>
+                    <div class="leader-info">
+                        <div class="leader-name">Мудрый Воин</div>
+                        <div class="leader-level">Уровень 25</div>
+                    </div>
+                    <div class="leader-score">15,420</div>
+                </div>
+                <div class="leader-item">
+                    <div class="leader-rank">2</div>
+                    <div class="leader-info">
+                        <div class="leader-name">Справедливый Судья</div>
+                        <div class="leader-level">Уровень 23</div>
+                    </div>
+                    <div class="leader-score">14,150</div>
+                </div>
+                <div class="leader-item">
+                    <div class="leader-rank">3</div>
+                    <div class="leader-info">
+                        <div class="leader-name">Храбрый Защитник</div>
+                        <div class="leader-level">Уровень 21</div>
+                    </div>
+                    <div class="leader-score">12,890</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контент гильдий -->
+        <div class="game-content" id="guilds-content">
+            <div class="guild-card" id="current-guild-info" style="display: none;">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name" id="current-guild-name">Моя гильдия</div>
+                        <div class="guild-members" id="current-guild-members">Участники</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="leaveCurrentGuild()">Покинуть</button>
+                </div>
+                <p id="current-guild-description">Описание гильдии</p>
+                <div class="guild-member" style="margin-top: 15px;">
+                    <span>Ваш вклад:</span>
+                    <span id="player-contribution">0</span>
+                </div>
+                <button class="guild-join-btn" style="width: 100%; margin-top: 10px;" onclick="contributeToGuild()">
+                    Внести 100 XP в казну
+                </button>
+            </div>
+
+            <div class="guild-card">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name">⚔️ Рыцари Справедливости</div>
+                        <div class="guild-members">42 участника</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="joinGuild('justice_knights')">Присоединиться</button>
+                </div>
+                <p>Гильдия для тех, кто ценит честность и справедливость в любых ситуациях</p>
+                <p><strong>Требования:</strong> Честь 30+ | <strong>Бонус:</strong> Удвоенный опыт за честные решения</p>
+            </div>
+            
+            <div class="guild-card">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name">🧠 Мудрецы Пути</div>
+                        <div class="guild-members">38 участников</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="joinGuild('wise_sages')">Присоединиться</button>
+                </div>
+                <p>Объединение мыслителей, которые ищут глубинный смысл в каждом решении</p>
+                <p><strong>Требования:</strong> Мудрость 25+ | <strong>Бонус:</strong> Бонус к мудрости за философские выборы</p>
+            </div>
+
+            <div class="guild-card">
+                <div class="guild-header">
+                    <div>
+                        <div class="guild-name">💪 Воины Силы</div>
+                        <div class="guild-members">51 участник</div>
+                    </div>
+                    <button class="guild-join-btn" onclick="joinGuild('power_warriors')">Присоединиться</button>
+                </div>
+                <p>Гильдия для решительных лидеров, готовых принимать сложные решения</p>
+                <p><strong>Требования:</strong> Сила 35+ | <strong>Бонус:</strong> Увеличенный опыт за смелые поступки</p>
+            </div>
+        </div>
+
+        <!-- Контент PvP дуэлей -->
+        <div class="game-content" id="pvp-content">
+            <div class="daily-limits">
+                <h3>📊 Дневные лимиты</h3>
+                <div class="limit-bar">
+                    <div class="limit-fill" id="daily-limit-fill" style="width: 0%"></div>
+                </div>
+                <p>Осталось вопросов сегодня: <span id="remaining-questions">20</span></p>
+                <p>Сброс через: <span id="reset-timer">00:00:00</span></p>
+            </div>
+
+
+
+            <div class="pvp-arena" id="pvp-arena" style="display: none;">
+                <div class="battle-animation">⚔️</div>
+                <h2 style="text-align: center; color: #FFD700; margin-bottom: 20px;">⚔️ МОРАЛЬНАЯ ДУЭЛЬ ⚔️</h2>
+                <div class="duel-participants">
+                    <div class="duel-player">
+                        <div class="duel-player-avatar" id="challenger-avatar">👤</div>
+                        <div class="duel-player-name" id="challenger-name">Боец 1</div>
+                        <div class="duel-score" id="challenger-score">0</div>
+                    </div>
+                    <div class="duel-vs">VS</div>
+                    <div class="duel-player">
+                        <div class="duel-player-avatar" id="target-avatar">👤</div>
+                        <div class="duel-player-name" id="target-name">Боец 2</div>
+                        <div class="duel-score" id="target-score">0</div>
+                    </div>
+                </div>
+                <div id="duel-question-container" style="display: none;">
+                    <div class="scene-text" id="duel-question-text"></div>
+                    <div class="options-container" id="duel-options-container"></div>
                 </div>
             </div>
 
-            <!-- Игровое меню -->
-            <div class="game-menu">
-                <!-- Основные действия -->
-                <div class="menu-section">
-                    <div class="section-title">
-                        <span>🎮</span>
-                        Основные действия
+            <!-- Лобби -->
+            <div class="lobby-section" id="lobby-section" style="display: none;">
+                <div class="lobby-header">
+                    🏆 Игровое Лобби
+                    <button class="friend-btn invite-btn" onclick="hideLobby()" style="float: right; margin-top: -5px;">← Назад</button>
+                </div>
+                <div class="options-container">
+                    <button class="option-btn" onclick="createPublicChallenge()">
+                        ⚔️ Создать вызов
+                    </button>
+                    <button class="option-btn" onclick="showPublicChallenges()">
+                        📋 Публичные вызовы
+                    </button>
+                    <button class="option-btn" onclick="showMyChallenges()">
+                        🎯 Мои вызовы
+                    </button>
+                </div>
+                
+                <!-- Поиск по лобби -->
+                <div class="search-section" style="margin: 15px 0;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="lobby-search" placeholder="🔍 Поиск по имени, ставке, уровню..." 
+                               style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,107,53,0.3); background: rgba(255,255,255,0.1); color: white;">
+                        <button class="friend-btn challenge-btn" onclick="searchChallenges()">🔍</button>
+                        <button class="friend-btn invite-btn" onclick="clearSearch()">❌</button>
                     </div>
-                    <div class="menu-grid">
-                        <div class="menu-item" onclick="startAdventure()">
-                            <div class="menu-icon">⚔️</div>
-                            <div class="menu-text">Приключения</div>
-                        </div>
-                        <div class="menu-item" onclick="showPvPDuels()">
-                            <div class="menu-icon">⚔️</div>
-                            <div class="menu-text">PvP Дуэли</div>
-                        </div>
-                        <div class="menu-item" onclick="showRating()">
-                            <div class="menu-icon">🏆</div>
-                            <div class="menu-text">Рейтинг</div>
-                        </div>
-                        <div class="menu-item" onclick="showGuilds()">
-                            <div class="menu-icon">🏰</div>
-                            <div class="menu-text">Гильдии</div>
-                        </div>
-                        <div class="menu-item" onclick="showTournaments()">
-                            <div class="menu-icon">👑</div>
-                            <div class="menu-text">Турниры</div>
-                        </div>
+                    <div style="margin-top: 10px;">
+                        <label style="color: white; font-size: 12px;">
+                            <input type="checkbox" id="show-private" checked onchange="searchChallenges()"> 
+                            Показывать приватные вызовы
+                        </label>
                     </div>
                 </div>
+                
+                <div id="public-challenges-list"></div>
+            </div>
 
-                <!-- Ежедневные лимиты -->
-                <div class="menu-section">
-                    <div class="section-title">
-                        <span>📅</span>
-                        Ежедневные лимиты
-                    </div>
-                    <div class="daily-limits">
-                        <p>Осталось вопросов сегодня: <span id="dailyQuestionsLeft">20</span></p>
-                        <p>Сброс через: <span id="dailyResetTime">00:00:00</span></p>
-                    </div>
+            <!-- Рейтинги -->
+            <div class="lobby-section" id="ratings-section" style="display: none;">
+                <div class="lobby-header">
+                    🏅 Рейтинг Дуэлянтов
+                    <button class="friend-btn invite-btn" onclick="hideRatings()" style="float: right; margin-top: -5px;">← Назад</button>
                 </div>
-
-                <!-- Игровое лобби -->
-                <div class="menu-section lobby-section">
-                    <div class="section-title">
-                        <span>🏆</span>
-                        Игровое Лобби
-                    </div>
-                    
-                    <!-- Форма создания вызова -->
-                    <div class="challenge-form">
-                        <div class="form-group">
-                            <label class="form-label">Ставка (XP):</label>
-                            <input type="number" class="form-input" id="challengeBet" value="50" min="10" max="1000">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Минимальный уровень:</label>
-                            <input type="number" class="form-input" id="challengeMinLevel" value="1" min="1" max="10">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Пароль (для приватного вызова):</label>
-                            <input type="text" class="form-input" id="challengePassword" placeholder="Оставьте пустым для публичного">
-                        </div>
-                        <button class="btn btn-primary" onclick="createChallenge()">Создать вызов</button>
-                    </div>
-
-                    <!-- Список вызовов -->
-                    <div class="challenges-list" id="challengesList">
-                        <!-- Вызовы будут добавлены динамически -->
-                    </div>
+                <div class="rating-tabs">
+                    <button class="rating-tab active" onclick="showRating('daily')">День</button>
+                    <button class="rating-tab" onclick="showRating('weekly')">Неделя</button>
+                    <button class="rating-tab" onclick="showRating('monthly')">Месяц</button>
                 </div>
+                <div id="ratings-list"></div>
+            </div>
+
+            <div class="scene-container">
+                <div class="scene-text">
+                    🎯 <strong>PvP Дуэли</strong> - Сражайтесь с игроками в моральных поединках! 
+                    В дуэли 10 сложных вопросов, где каждый ответ оценивается по логике и скорости.
+                </div>
+                <div class="options-container">
+                    <button class="option-btn" onclick="showLobby()">
+                        🏆 Игровое лобби
+                    </button>
+                    <button class="option-btn" onclick="showRatings()">
+                        🏅 Рейтинги
+                    </button>
+                    <button class="option-btn" onclick="showActiveChallenges()">
+                        📋 Мои вызовы
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контент турниров -->
+        <div class="game-content" id="tournaments-content">
+            <div class="tournament-card">
+                <div class="tournament-status">АКТИВЕН</div>
+                <div class="tournament-title">🔥 Испытание Мудрости</div>
+                <p>Еженедельный турнир на лучшие решения сложных моральных дилемм</p>
+                <div class="tournament-prize">🏆 Главный приз: 5,000 XP</div>
+                <button class="guild-join-btn" style="width: 100%; margin-top: 15px;" onclick="joinTournament('weekly_wisdom')">
+                    Участвовать
+                </button>
+            </div>
+            
+            <div class="tournament-card">
+                <div class="tournament-status">СКОРО</div>
+                <div class="tournament-title">⚡ Битва Титанов</div>
+                <p>Месячный турнир лучших игроков сервера. Только для 20+ уровня</p>
+                <div class="tournament-prize">🏆 Главный приз: 20,000 XP + Титул</div>
+                <button class="guild-join-btn" style="width: 100%; margin-top: 15px; opacity: 0.5;" disabled>
+                    Начнется через 3 дня
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Попап достижений -->
+    <div class="achievement-popup" id="achievement-popup">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-title">Достижение получено!</div>
+    </div>
+
     <script>
-        // Глобальные переменные
-        let player = {
-            id: 1,
-            name: 'Герой',
-            level: 1,
-            xp: 0,
-            maxXp: 100
+        // Игровые данные
+        let gameData = {
+            player: {
+                id: "player_" + Date.now(),
+                name: "Новичок",
+                level: 1,
+                xp: 0,
+                xpToNext: 100,
+                power: 0,
+                wisdom: 0,
+                honor: 0,
+                totalChoices: 0,
+                bossesDefeated: 0,
+                achievements: [],
+                coins: 1000,
+                currentGuild: null,
+                guildContribution: 0,
+                pvpWins: 0,
+                pvpLosses: 0,
+                tournamentWins: 0
+            },
+            currentScene: 0,
+            gameStarted: false,
+            dailyQuestProgress: 0,
+            isBossFight: false,
+            currentDuel: null,
+            currentTournament: null
         };
 
-        let gameState = {
-            dailyQuestions: 20,
-            dailyReset: new Date().setHours(24, 0, 0, 0)
-        };
+        // Инициализация игровых систем
+        let pvpSystem, tournamentSystem, guildSystem, limitationSystem, vkIntegration, lobbySystem;
 
-        // Инициализация игры
-        function initGame() {
-            loadPlayerData();
-            createStars();
-            updateUI();
-            startDailyTimer();
-            
-            // Скрываем загрузочный экран
-            setTimeout(() => {
-                document.body.classList.add('loaded');
-            }, 1000);
-        }
-
-        // Загрузка данных игрока
-        function loadPlayerData() {
-            const savedPlayer = localStorage.getItem('player');
-            if (savedPlayer) {
-                player = JSON.parse(savedPlayer);
+        // Сцены игры
+        const gameScenes = [
+            {
+                scene: "Вы идете по улице и видите, как группа подростков издевается над бездомным котенком.",
+                options: [
+                    "Решительно вмешиваюсь и защищаю котенка",
+                    "Отвлекаю подростков разговором и незаметно уводу котенка",
+                    "Вызываю службу защиты животных и наблюдаю издалека"
+                ],
+                effects: [
+                    { power: 15, wisdom: 5, honor: 20, xp: 50 },
+                    { power: 5, wisdom: 20, honor: 15, xp: 60 },
+                    { power: 0, wisdom: 15, honor: 10, xp: 30 }
+                ],
+                type: "normal"
+            },
+            {
+                scene: "В магазине перед вами в очереди стоит пожилая женщина с одним товаром, а у вас полная корзина.",
+                options: [
+                    "Предлагаю ей пройти вперед",
+                    "Помогаю донести ее покупки до дома",
+                    "Остаюсь в очереди, это справедливо"
+                ],
+                effects: [
+                    { power: 5, wisdom: 10, honor: 15, xp: 40 },
+                    { power: 10, wisdom: 15, honor: 25, xp: 70 },
+                    { power: 0, wisdom: 5, honor: 5, xp: 20 }
+                ],
+                type: "normal"
+            },
+            {
+                scene: "🔥 БОСС-СИТУАЦИЯ: Ваш лучший друг попросил вас солгать его жене о том, где он был вчера вечером. Вы знаете, что он изменяет ей.",
+                options: [
+                    "Отказываюсь лгать и говорю правду жене",
+                    "Убеждаю друга самому признаться жене",
+                    "Лгу ради сохранения дружбы"
+                ],
+                effects: [
+                    { power: 25, wisdom: 30, honor: 40, xp: 150 },
+                    { power: 20, wisdom: 35, honor: 30, xp: 120 },
+                    { power: -10, wisdom: -15, honor: -20, xp: 50 }
+                ],
+                type: "boss"
             }
+        ];
 
-            const savedGameState = localStorage.getItem('gameState');
-            if (savedGameState) {
-                gameState = JSON.parse(savedGameState);
-            }
-        }
+        // Достижения
+        const achievements = [
+            { id: "first_choice", name: "Первый шаг", description: "Сделайте первый выбор", icon: "🎯" },
+            { id: "wise_master", name: "Мастер мудрости", description: "Наберите 100 мудрости", icon: "🧠" },
+            { id: "honor_guard", name: "Страж чести", description: "Наберите 100 чести", icon: "🛡️" },
+            { id: "boss_slayer", name: "Победитель боссов", description: "Победите 5 боссов", icon: "⚔️" }
+        ];
 
-        // Сохранение данных игрока
-        function savePlayerData() {
-            localStorage.setItem('player', JSON.stringify(player));
-            localStorage.setItem('gameState', JSON.stringify(gameState));
-        }
-
-        // Создание звездного фона
+        // Инициализация звезд
         function createStars() {
             const starsContainer = document.getElementById('stars');
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 100; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
-                star.style.width = Math.random() * 3 + 1 + 'px';
-                star.style.height = star.style.width;
                 star.style.animationDelay = Math.random() * 3 + 's';
                 starsContainer.appendChild(star);
             }
         }
 
-        // Обновление UI
-        function updateUI() {
-            document.getElementById('playerInitial').textContent = player.name.charAt(0);
-            document.getElementById('playerLevel').textContent = player.level;
-            document.getElementById('playerLevelValue').textContent = player.level;
-            document.getElementById('playerXP').textContent = player.xp;
-            document.getElementById('xpFill').style.width = (player.xp / player.maxXp * 100) + '%';
-            document.getElementById('dailyQuestionsLeft').textContent = gameState.dailyQuestions;
-            
-            updateChallengesList();
+        // Показать секцию
+        function showSection(section) {
+            document.querySelectorAll('.game-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(section + '-content').classList.add('active');
         }
 
-        // Таймер ежедневного сброса
-        function startDailyTimer() {
-            setInterval(() => {
-                const now = Date.now();
-                if (now >= gameState.dailyReset) {
-                    gameState.dailyQuestions = 20;
-                    gameState.dailyReset = new Date(now + 24 * 60 * 60 * 1000).setHours(24, 0, 0, 0);
-                    savePlayerData();
-                    updateUI();
+        // Обновить интерфейс игрока
+        function updatePlayerUI() {
+            document.getElementById('player-level').textContent = gameData.player.level;
+            document.getElementById('player-power').textContent = gameData.player.power;
+            document.getElementById('player-wisdom').textContent = gameData.player.wisdom;
+            document.getElementById('player-honor').textContent = gameData.player.honor;
+            
+            const xpPercent = (gameData.player.xp / gameData.player.xpToNext) * 100;
+            document.getElementById('xp-bar').style.width = xpPercent + '%';
+            document.getElementById('xp-text').textContent = `${gameData.player.xp} / ${gameData.player.xpToNext} XP`;
+        }
+
+        // Добавить XP
+        function addXP(amount) {
+            gameData.player.xp += amount;
+            
+            // Проверка повышения уровня
+            while (gameData.player.xp >= gameData.player.xpToNext) {
+                levelUp();
+            }
+            
+            // Эффект получения XP
+            showFloatingText(`+${amount} XP`, '#00ff88');
+            updatePlayerUI();
+        }
+
+        // Повышение уровня
+        function levelUp() {
+            gameData.player.xp -= gameData.player.xpToNext;
+            gameData.player.level++;
+            gameData.player.xpToNext = Math.floor(gameData.player.xpToNext * 1.5);
+            
+            showAchievement(`🎉 УРОВЕНЬ ${gameData.player.level}!`, "Вы стали сильнее!");
+            createParticleEffect();
+        }
+
+        // Показать плавающий текст
+        function showFloatingText(text, color = '#fff') {
+            const floating = document.createElement('div');
+            floating.className = 'floating-text';
+            floating.textContent = text;
+            floating.style.color = color;
+            floating.style.left = Math.random() * 300 + 100 + 'px';
+            floating.style.top = '50%';
+            document.body.appendChild(floating);
+            
+            setTimeout(() => floating.remove(), 2000);
+        }
+
+        // Создать эффект частиц
+        function createParticleEffect() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle-effect';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = Math.random() * window.innerHeight + 'px';
+                    particle.style.background = ['#00ff88', '#00aaff', '#ff6b35', '#ffc107'][Math.floor(Math.random() * 4)];
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        // Показать достижение
+        function showAchievement(title, description) {
+            const popup = document.getElementById('achievement-popup');
+            popup.querySelector('.achievement-title').textContent = title;
+            popup.classList.add('show');
+            
+            setTimeout(() => popup.classList.remove('show'), 3000);
+        }
+
+        // Проверить достижения
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (gameData.player.achievements.includes(achievement.id)) return;
+                
+                let unlocked = false;
+                
+                switch (achievement.id) {
+                    case "first_choice":
+                        unlocked = gameData.player.totalChoices >= 1;
+                        break;
+                    case "wise_master":
+                        unlocked = gameData.player.wisdom >= 100;
+                        break;
+                    case "honor_guard":
+                        unlocked = gameData.player.honor >= 100;
+                        break;
+                    case "boss_slayer":
+                        unlocked = gameData.player.bossesDefeated >= 5;
+                        break;
                 }
                 
-                const timeLeft = gameState.dailyReset - now;
-                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                document.getElementById('dailyResetTime').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
-
-        // Создание вызова
-        function createChallenge() {
-            const bet = parseInt(document.getElementById('challengeBet').value);
-            const minLevel = parseInt(document.getElementById('challengeMinLevel').value);
-            const password = document.getElementById('challengePassword').value;
-
-            if (bet < 10 || bet > 1000) {
-                alert('Ставка должна быть от 10 до 1000 XP');
-                return;
-            }
-
-            if (player.xp < bet) {
-                alert('Недостаточно XP для создания вызова');
-                return;
-            }
-
-            const result = window.lobbySystem.createPublicChallenge(player, bet, minLevel, password);
-            
-            if (result.error) {
-                alert(result.error);
-            } else {
-                alert('Вызов создан успешно!');
-                updateChallengesList();
-            }
-        }
-
-        // Обновление списка вызовов
-        function updateChallengesList() {
-            const challengesList = document.getElementById('challengesList');
-            const challenges = window.lobbySystem.getActiveChallenges();
-            
-            challengesList.innerHTML = '';
-            
-            if (challenges.length === 0) {
-                challengesList.innerHTML = '<p style="text-align: center; color: #ccc;">Нет активных вызовов</p>';
-                return;
-            }
-            
-            challenges.forEach(challenge => {
-                const challengeItem = document.createElement('div');
-                challengeItem.className = 'challenge-item';
-                challengeItem.innerHTML = `
-                    <div class="challenge-info">
-                        <div class="challenge-name">${challenge.challengerName}</div>
-                        <div class="challenge-bet">Ставка: ${challenge.bet} XP | Уровень: ${challenge.challengerLevel}</div>
-                    </div>
-                    <div class="challenge-actions">
-                        <button class="btn btn-primary btn-small" onclick="acceptChallenge(${challenge.id})">Принять</button>
-                        ${challenge.challenger === player.id ? 
-                            `<button class="btn btn-secondary btn-small" onclick="cancelChallenge(${challenge.id})">Отменить</button>` : 
-                            ''
-                        }
-                    </div>
-                `;
-                challengesList.appendChild(challengeItem);
+                if (unlocked) {
+                    gameData.player.achievements.push(achievement.id);
+                    showAchievement(`${achievement.icon} ${achievement.name}`, achievement.description);
+                    addXP(100);
+                }
             });
         }
 
-        // Принятие вызова
-        function acceptChallenge(challengeId) {
-            const result = window.lobbySystem.acceptPublicChallenge(challengeId, player);
+        // Начать первое приключение
+        function startFirstAdventure() {
+            gameData.gameStarted = true;
+            nextScene();
+        }
+
+        // Получить случайный сценарий из новых
+        function getRandomGameScenario() {
+            if (window.gameScenarios && window.gameScenarios.length > 0) {
+                const randomScenario = window.gameScenarios[Math.floor(Math.random() * window.gameScenarios.length)];
+                return {
+                    scene: randomScenario.text,
+                    options: randomScenario.options.map(opt => opt.text),
+                    effects: randomScenario.options.map(opt => ({
+                        power: Math.floor(opt.morality / 10),
+                        wisdom: Math.floor(opt.morality / 5),
+                        honor: opt.morality,
+                        xp: opt.xp
+                    }))
+                };
+            }
+            return null;
+        }
+
+        // Следующая сцена
+        function nextScene() {
+            // 70% шанс использовать новый сценарий, 30% - старый
+            const useNewScenario = Math.random() < 0.7;
             
-            if (result.error) {
-                alert(result.error);
+            let scene;
+            if (useNewScenario) {
+                scene = getRandomGameScenario();
+            }
+            
+            // Если новый сценарий не получен или недоступен, используем старый
+            if (!scene) {
+                if (gameData.currentScene >= gameScenes.length) {
+                    // Если сцены закончились, начинаем заново с увеличенной сложностью
+                    gameData.currentScene = 0;
+                }
+                scene = gameScenes[gameData.currentScene];
+            }
+            
+            // Проверяем, является ли это босс-сценой
+            if (scene.type === "boss") {
+                gameData.isBossFight = true;
+                document.getElementById('boss-arena').style.display = 'block';
             } else {
-                alert('Вызов принят! Начинаем дуэль...');
-                // Здесь можно запустить дуэль
-                updateChallengesList();
+                gameData.isBossFight = false;
+                document.getElementById('boss-arena').style.display = 'none';
+            }
+            
+            document.getElementById('scene-text').textContent = scene.scene;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            scene.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => makeChoice(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Сделать выбор
+        function makeChoice(optionIndex) {
+            // Получаем текущую сцену (может быть новой или старой)
+            let scene, effect, usedNewScenario = false;
+            
+            // 70% шанс использовать новый сценарий
+            const useNewScenario = Math.random() < 0.7;
+            
+            if (useNewScenario) {
+                const newScene = getRandomGameScenario();
+                if (newScene) {
+                    scene = newScene;
+                    effect = scene.effects[optionIndex];
+                    usedNewScenario = true;
+                }
+            }
+            
+            // Если новый сценарий не получен, используем старый
+            if (!scene) {
+                scene = gameScenes[gameData.currentScene];
+                effect = scene.effects[optionIndex];
+                usedNewScenario = false;
+            }
+            
+            // Применяем эффекты
+            gameData.player.power += effect.power || 0;
+            gameData.player.wisdom += effect.wisdom || 0;
+            gameData.player.honor += effect.honor || 0;
+            gameData.player.totalChoices++;
+            
+            // Добавляем XP
+            addXP(effect.xp || 30);
+            
+            // Если это была босс-битва
+            if (gameData.isBossFight) {
+                gameData.player.bossesDefeated++;
+                showAchievement("⚔️ БОСС ПОБЕЖДЕН!", "Вы справились с серьезным испытанием!");
+            }
+            
+            // Обновляем прогресс ежедневного квеста
+            if (effect.wisdom > 10) {
+                gameData.dailyQuestProgress = Math.min(5, gameData.dailyQuestProgress + 1);
+                updateDailyQuest();
+            }
+            
+            // Показываем эффекты
+            if (effect.power > 0) showFloatingText(`+${effect.power} Сила`, '#ff6b35');
+            if (effect.wisdom > 0) showFloatingText(`+${effect.wisdom} Мудрость`, '#00aaff');
+            if (effect.honor > 0) showFloatingText(`+${effect.honor} Честь`, '#ffc107');
+            
+            updatePlayerUI();
+            checkAchievements();
+            
+            // Переходим к следующей сцене через 2 секунды
+            setTimeout(() => {
+                // Если использовали новый сценарий, не увеличиваем счетчик
+                if (!usedNewScenario) {
+                    gameData.currentScene++;
+                }
+                nextScene();
+            }, 2000);
+        }
+
+        // Обновить ежедневный квест
+        function updateDailyQuest() {
+            const progress = (gameData.dailyQuestProgress / 5) * 100;
+            document.getElementById('daily-progress').style.width = progress + '%';
+            
+            if (gameData.dailyQuestProgress === 5) {
+                addXP(200);
+                showAchievement("📅 Квест выполнен!", "Ежедневный квест завершен!");
+                gameData.dailyQuestProgress = 0; // Сброс для следующего дня
             }
         }
 
-        // Отмена вызова
-        function cancelChallenge(challengeId) {
-            const result = window.lobbySystem.cancelChallenge(challengeId, player.id);
+        // Показать обучение
+        function showTutorial() {
+            alert("🎮 Добро пожаловать в Путь Героя!\n\n" +
+                  "📈 Прокачивайте Силу, Мудрость и Честь\n" +
+                  "⚔️ Сражайтесь с боссами жизненных ситуаций\n" +
+                  "🏆 Соревнуйтесь в рейтинге\n" +
+                  "⚔️ Вступайте в гильдии\n" +
+                  "👑 Участвуйте в турнирах\n" +
+                  "📅 Выполняйте ежедневные квесты\n\n" +
+                  "Каждое решение имеет значение!");
+        }
+
+        // Инициализация VK Bridge
+        function initVKBridge() {
+            if (typeof vkBridge !== 'undefined') {
+                vkBridge.send('VKWebAppInit');
+                
+                vkBridge.subscribe((e) => {
+                    if (e.detail.type === 'VKWebAppInitResult') {
+                        console.log('VK Bridge инициализирован');
+                    }
+                });
+            }
+        }
+
+        // Загрузка игры
+        function loadGame() {
+            const saved = localStorage.getItem('heroPathGame');
+            if (saved) {
+                gameData = { ...gameData, ...JSON.parse(saved) };
+            }
+            updatePlayerUI();
+        }
+
+        // Сохранение игры
+        function saveGame() {
+            localStorage.setItem('heroPathGame', JSON.stringify(gameData));
+        }
+
+        // Автосохранение каждые 30 секунд
+        setInterval(saveGame, 30000);
+
+        // === PvP ФУНКЦИИ ===
+        function showActiveChallenges() {
+            const challenges = lobbySystem.getActiveChallenges();
+            const myChallenges = challenges.filter(c => c.challenger === gameData.player.id);
+            const challengesList = document.getElementById('public-challenges-list');
             
+            if (myChallenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">У вас нет активных вызовов</p>';
+            } else {
+                let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">🎯 Мои вызовы</h4>';
+                myChallenges.forEach(challenge => {
+                    const privacyIcon = challenge.isPrivate ? '🔒' : '🌐';
+                    const privacyText = challenge.isPrivate ? 'Приватный' : 'Публичный';
+                    
+                    html += `
+                        <div class="public-challenge">
+                            <div class="challenge-info">
+                                <div class="challenger-info">
+                                    <div class="challenger-avatar">${challenge.challengerName.charAt(0)}</div>
+                                    <div>
+                                        <div class="friend-name">${challenge.challengerName}</div>
+                                        <div class="friend-status">Ставка: ${challenge.bet} XP | ${privacyIcon} ${privacyText}</div>
+                                    </div>
+                                </div>
+                                <div class="challenge-details">
+                                    <div class="challenge-level">Мин. уровень: ${challenge.minLevel}</div>
+                                    <div class="friend-status">Ожидает...</div>
+                                </div>
+                            </div>
+                            <div class="challenge-actions">
+                                <button class="friend-btn invite-btn" onclick="cancelPublicChallenge(${challenge.id})">❌ Отменить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                challengesList.innerHTML = html;
+            }
+            
+            document.getElementById('lobby-section').style.display = 'block';
+            document.getElementById('ratings-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+        }
+
+        // === ФУНКЦИИ ЛОББИ ===
+        function showLobby() {
+            document.getElementById('lobby-section').style.display = 'block';
+            document.getElementById('ratings-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+        }
+
+        function hideLobby() {
+            document.getElementById('lobby-section').style.display = 'none';
+        }
+
+        function showRatings() {
+            document.getElementById('ratings-section').style.display = 'block';
+            document.getElementById('lobby-section').style.display = 'none';
+            document.getElementById('pvp-arena').style.display = 'none';
+            showRating('daily'); // Показываем дневной рейтинг по умолчанию
+        }
+
+        function hideRatings() {
+            document.getElementById('ratings-section').style.display = 'none';
+        }
+
+        function createPublicChallenge() {
+            const maxBet = Math.min(500, gameData.player.xp);
+            if (maxBet < 50) {
+                alert("У вас недостаточно XP для создания вызова! Нужно минимум 50 XP.");
+                return;
+            }
+            
+            const bet = parseInt(prompt(`Введите ставку XP (от 50 до ${maxBet}):`)) || 100;
+            if (bet < 50 || bet > maxBet) {
+                alert(`Ставка должна быть от 50 до ${maxBet} XP`);
+                return;
+            }
+            
+            const minLevel = parseInt(prompt("Минимальный уровень для принятия вызова (1-20):")) || 1;
+            if (minLevel < 1 || minLevel > 20) {
+                alert("Минимальный уровень должен быть от 1 до 20");
+                return;
+            }
+            
+            const password = prompt("Пароль для приватного вызова (оставьте пустым для публичного):") || '';
+            
+            const challenge = lobbySystem.createPublicChallenge(gameData.player, bet, minLevel, password);
+            if (challenge) {
+                const type = password ? 'приватный' : 'публичный';
+                const passwordInfo = password ? `\nПароль: ${password}` : '';
+                alert(`🏆 ${type.charAt(0).toUpperCase() + type.slice(1)} вызов создан! Ставка: ${bet} XP, мин. уровень: ${minLevel}${passwordInfo}`);
+                showPublicChallenges();
+            }
+        }
+
+        function showPublicChallenges() {
+            const searchTerm = document.getElementById('lobby-search').value;
+            const showPrivate = document.getElementById('show-private').checked;
+            const challenges = lobbySystem.getActiveChallenges(searchTerm, showPrivate);
+            const challengesList = document.getElementById('public-challenges-list');
+            
+            if (challenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет активных вызовов</p>';
+                return;
+            }
+            
+            let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">⚔️ Доступные вызовы</h4>';
+            challenges.forEach(challenge => {
+                if (challenge.challenger !== gameData.player.id) { // Не показываем свои вызовы
+                    html += createPublicChallengeItem(challenge);
+                }
+            });
+            
+            challengesList.innerHTML = html;
+        }
+
+        function createPublicChallengeItem(challenge) {
+            const canAccept = gameData.player.level >= challenge.minLevel && gameData.player.xp >= challenge.bet;
+            const acceptButton = canAccept ? 
+                `<button class="friend-btn challenge-btn" onclick="acceptPublicChallenge(${challenge.id})">✅ Принять</button>` :
+                `<button class="friend-btn invite-btn" disabled style="opacity: 0.5;">❌ Недоступно</button>`;
+            
+            const privacyIcon = challenge.isPrivate ? '🔒' : '🌐';
+            const privacyText = challenge.isPrivate ? 'Приватный' : 'Публичный';
+            
+            return `
+                <div class="public-challenge">
+                    <div class="challenge-info">
+                        <div class="challenger-info">
+                            <div class="challenger-avatar">${challenge.challengerName.charAt(0)}</div>
+                            <div>
+                                <div class="friend-name">${challenge.challengerName}</div>
+                                <div class="friend-status">Уровень ${challenge.challengerLevel} | ${privacyIcon} ${privacyText}</div>
+                            </div>
+                        </div>
+                        <div class="challenge-details">
+                            <div class="challenge-bet">${challenge.bet} XP</div>
+                            <div class="challenge-level">Мин. уровень: ${challenge.minLevel}</div>
+                        </div>
+                    </div>
+                    <div class="challenge-actions">
+                        ${acceptButton}
+                    </div>
+                </div>
+            `;
+        }
+
+        function acceptPublicChallenge(challengeId) {
+            const challenge = lobbySystem.activeChallenges.find(c => c.id === challengeId);
+            let password = '';
+            
+            if (challenge && challenge.isPrivate) {
+                password = prompt("Введите пароль для этого вызова:") || '';
+                if (!password) {
+                    alert("Пароль обязателен для приватного вызова");
+                    return;
+                }
+            }
+            
+            const result = lobbySystem.acceptPublicChallenge(challengeId, gameData.player, password);
+            if (result && !result.error) {
+                alert(`⚔️ Вызов принят! Начинаем дуэль с ${result.challengerName}`);
+                // Создаем дуэль в PvP системе
+                const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
+                if (duel) {
+                    gameData.currentDuel = duel;
+                    startPvPDuel(duel);
+                }
+            } else if (result && result.error) {
+                alert(`❌ ${result.error}`);
+            } else {
+                alert("❌ Вызов недоступен");
+            }
+        }
+
+        function showMyChallenges() {
+            const challenges = lobbySystem.getActiveChallenges();
+            const myChallenges = challenges.filter(c => c.challenger === gameData.player.id);
+            const challengesList = document.getElementById('public-challenges-list');
+            
+            if (myChallenges.length === 0) {
+                challengesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">У вас нет активных вызовов</p>';
+                return;
+            }
+            
+            let html = '<h4 style="color: #FFC107; margin: 15px 0 10px 0;">🎯 Мои вызовы</h4>';
+            myChallenges.forEach(challenge => {
+                html += `
+                    <div class="public-challenge">
+                        <div class="challenge-info">
+                            <div class="challenger-info">
+                                <div class="challenger-avatar">${challenge.challengerName.charAt(0)}</div>
+                                <div>
+                                    <div class="friend-name">${challenge.challengerName}</div>
+                                    <div class="friend-status">Ставка: ${challenge.bet} XP</div>
+                                </div>
+                            </div>
+                            <div class="challenge-details">
+                                <div class="challenge-level">Мин. уровень: ${challenge.minLevel}</div>
+                                <div class="friend-status">Ожидает...</div>
+                            </div>
+                        </div>
+                        <div class="challenge-actions">
+                            <button class="friend-btn invite-btn" onclick="cancelPublicChallenge(${challenge.id})">❌ Отменить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            challengesList.innerHTML = html;
+        }
+
+        function cancelPublicChallenge(challengeId) {
+            if (confirm("Отменить этот вызов?")) {
+                const success = lobbySystem.cancelChallenge(challengeId, gameData.player.id);
+                if (success) {
+                    alert("Вызов отменен");
+                    showMyChallenges();
+                }
+            }
+        }
+
+        function showRating(period) {
+            // Обновляем активную вкладку
+            document.querySelectorAll('.rating-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const ratings = lobbySystem.getTopPlayers(period, 10);
+            const ratingsList = document.getElementById('ratings-list');
+            
+            if (ratings.length === 0) {
+                ratingsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">Нет данных для этого периода</p>';
+                return;
+            }
+            
+            let html = '';
+            ratings.forEach((player, index) => {
+                const rank = index + 1;
+                const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                
+                html += `
+                    <div class="rating-item">
+                        <div class="rating-rank">${rankIcon}</div>
+                        <div class="rating-player">
+                            <div class="friend-name">${player.playerName}</div>
+                            <div class="friend-status">Рейтинг: ${player.rating}</div>
+                        </div>
+                        <div class="rating-stats">
+                            <div>Победы: ${player.wins}</div>
+                            <div>Поражения: ${player.losses}</div>
+                            <div>Всего ставок: ${player.totalBet} XP</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ratingsList.innerHTML = html;
+        }
+
+        // === ФУНКЦИИ ПОИСКА ===
+        function searchChallenges() {
+            showPublicChallenges();
+        }
+
+        function clearSearch() {
+            document.getElementById('lobby-search').value = '';
+            document.getElementById('show-private').checked = true;
+            showPublicChallenges();
+        }
+
+        // Добавляем обработчик Enter для поиска
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('lobby-search');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchChallenges();
+                    }
+                });
+            }
+        });
+
+        function acceptPvPChallenge(challengeId) {
+            const duel = pvpSystem.acceptChallenge(challengeId, gameData.player.name);
+            if (duel) {
+                gameData.currentDuel = duel;
+                startPvPDuel(duel);
+            }
+        }
+
+        function startPvPDuel(duel) {
+            document.getElementById('pvp-arena').style.display = 'block';
+            document.getElementById('challenger-name').textContent = duel.challenger;
+            document.getElementById('target-name').textContent = duel.target;
+            document.getElementById('challenger-score').textContent = '0';
+            document.getElementById('target-score').textContent = '0';
+            
+            showNextDuelQuestion(duel);
+        }
+
+        function showNextDuelQuestion(duel) {
+            if (duel.currentQuestion >= duel.questions.length) {
+                finishDuel(duel);
+                return;
+            }
+            
+            const question = duel.questions[duel.currentQuestion];
+            document.getElementById('duel-question-text').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('duel-options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => answerDuelQuestion(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('duel-question-container').style.display = 'block';
+        }
+
+        function answerDuelQuestion(answerIndex) {
+            const startTime = Date.now();
+            const result = pvpSystem.answerDuelQuestion(gameData.currentDuel.id, gameData.player.name, answerIndex, 0);
+            
+            if (result.type === 'answer') {
+                // Обновляем счет
+                if (gameData.currentDuel.challenger === gameData.player.name) {
+                    gameData.currentDuel.challengerScore = result.currentScore;
+                    document.getElementById('challenger-score').textContent = result.currentScore;
+                } else {
+                    gameData.currentDuel.targetScore = result.currentScore;
+                    document.getElementById('target-score').textContent = result.currentScore;
+                }
+                
+                showFloatingText(`+${result.score}`, '#FF4500');
+                
+                setTimeout(() => {
+                    showNextDuelQuestion(gameData.currentDuel);
+                }, 2000);
+            } else if (result.type === 'finished') {
+                finishDuel(result);
+            }
+        }
+
+        function finishDuel(result) {
+            const isWinner = result.winner === gameData.player.name;
+            const message = isWinner ? 
+                `🏆 ПОБЕДА! Вы выиграли ${result.bet} XP!` : 
+                `💔 Поражение! Вы проиграли ${result.bet} XP`;
+            
+            if (isWinner) {
+                gameData.player.pvpWins++;
+                addXP(result.bet);
+            } else {
+                gameData.player.pvpLosses++;
+                gameData.player.xp = Math.max(0, gameData.player.xp - result.bet);
+            }
+            
+            // Записываем результат в лобби систему
+            const winner = isWinner ? gameData.player : { id: 'opponent', name: result.winner };
+            const loser = isWinner ? { id: 'opponent', name: result.loser } : gameData.player;
+            lobbySystem.recordDuelResult(winner, loser, result.bet);
+            
+            // Показываем результат
+            const resultMessage = message + '\n\nХотите поделиться результатом?';
+            if (confirm(resultMessage)) {
+                vkIntegration.shareDuelResult({
+                    isWinner: isWinner,
+                    bet: result.bet,
+                    opponent: isWinner ? result.loser : result.winner
+                });
+            }
+            
+            document.getElementById('pvp-arena').style.display = 'none';
+            gameData.currentDuel = null;
+            updatePlayerUI();
+        }
+
+        function showPvPHistory() {
+            const wins = gameData.player.pvpWins;
+            const losses = gameData.player.pvpLosses;
+            const total = wins + losses;
+            const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+            
+            alert(`📊 История PvP дуэлей:\n\nПобеды: ${wins}\nПоражения: ${losses}\nВсего: ${total}\nПроцент побед: ${winRate}%`);
+        }
+
+        // === ТУРНИРНЫЕ ФУНКЦИИ ===
+        function joinTournament(tournamentId) {
+            const result = tournamentSystem.registerForTournament(tournamentId, gameData.player);
             if (result) {
-                alert('Вызов отменен');
-                updateChallengesList();
+                alert("Вы успешно зарегистрировались на турнир!");
             } else {
-                alert('Не удалось отменить вызов');
+                alert("Не удалось зарегистрироваться. Проверьте требования турнира.");
             }
         }
 
-        // Заглушки для других функций
-        function startAdventure() {
-            alert('Функция приключений в разработке');
+        // === ГИЛЬДЕЙСКИЕ ФУНКЦИИ ===
+        function joinGuild(guildId) {
+            const result = guildSystem.joinGuild(guildId, gameData.player);
+            if (result.success) {
+                gameData.player.currentGuild = guildId;
+                updateGuildUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
         }
 
-        function showPvPDuels() {
-            alert('Функция PvP дуэлей в разработке');
+        function leaveCurrentGuild() {
+            const result = guildSystem.leaveGuild(gameData.player.id);
+            if (result.success) {
+                gameData.player.currentGuild = null;
+                gameData.player.guildContribution = 0;
+                updateGuildUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
         }
 
-        function showRating() {
-            alert('Функция рейтинга в разработке');
+        function contributeToGuild() {
+            if (!gameData.player.currentGuild) return;
+            
+            const result = guildSystem.contributeToGuild(gameData.player.id, 100);
+            if (result.success) {
+                gameData.player.guildContribution += 100;
+                gameData.player.xp = Math.max(0, gameData.player.xp - 100);
+                updateGuildUI();
+                updatePlayerUI();
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
         }
 
-        function showGuilds() {
-            alert('Функция гильдий в разработке');
+        function updateGuildUI() {
+            const currentGuildInfo = document.getElementById('current-guild-info');
+            
+            if (gameData.player.currentGuild) {
+                const guild = guildSystem.guilds.get(gameData.player.currentGuild);
+                if (guild) {
+                    document.getElementById('current-guild-name').textContent = guild.name;
+                    document.getElementById('current-guild-members').textContent = `${guild.members.length} участников`;
+                    document.getElementById('current-guild-description').textContent = guild.description;
+                    document.getElementById('player-contribution').textContent = gameData.player.guildContribution;
+                    currentGuildInfo.style.display = 'block';
+                }
+            } else {
+                currentGuildInfo.style.display = 'none';
+            }
         }
 
-        function showTournaments() {
-            alert('Функция турниров в разработке');
+        // === ФУНКЦИИ ЛИМИТОВ ===
+        function updateLimitsUI() {
+            const limits = limitationSystem.getLimitsInfo(gameData.player.id);
+            const remaining = limits.remaining;
+            const total = limits.limit;
+            
+            document.getElementById('remaining-questions').textContent = remaining;
+            document.getElementById('daily-limit-fill').style.width = ((total - remaining) / total * 100) + '%';
+            
+            // Обновляем таймер сброса
+            updateResetTimer();
         }
 
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', initGame);
+        function updateResetTimer() {
+            const timeUntilReset = limitationSystem.getTimeUntilReset(gameData.player.id);
+            const hours = Math.floor(timeUntilReset / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeUntilReset % (1000 * 60)) / 1000);
+            
+            document.getElementById('reset-timer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
 
-        // Обновление списка вызовов каждые 5 секунд
-        setInterval(updateChallengesList, 5000);
+        // Обновляем функцию makeChoice для работы с лимитами
+        function makeChoice(optionIndex) {
+            // Проверяем лимиты
+            if (!limitationSystem.canAnswerQuestion(gameData.player.id)) {
+                alert("Вы исчерпали дневной лимит вопросов! Попробуйте завтра или участвуйте в PvP дуэлях!");
+                return;
+            }
+
+            const scene = gameScenes[gameData.currentScene];
+            const effect = scene.effects[optionIndex];
+            
+            // Применяем эффекты
+            gameData.player.power += effect.power || 0;
+            gameData.player.wisdom += effect.wisdom || 0;
+            gameData.player.honor += effect.honor || 0;
+            gameData.player.totalChoices++;
+            
+            // Записываем ответ в лимиты
+            limitationSystem.recordQuestionAnswer(gameData.player.id);
+            
+            // Проверяем бонусы гильдии
+            const guildBonus = guildSystem.getGuildBonus(gameData.player.id);
+            let xpGain = effect.xp || 30;
+            
+            if (guildBonus) {
+                if (guildBonus.honorMultiplier && effect.honor > 0) {
+                    xpGain = Math.floor(xpGain * guildBonus.honorMultiplier);
+                }
+                if (guildBonus.xpBonus) {
+                    xpGain += guildBonus.xpBonus;
+                }
+            }
+            
+            // Добавляем XP
+            addXP(xpGain);
+            
+            // Если это была босс-битва
+            if (gameData.isBossFight) {
+                gameData.player.bossesDefeated++;
+                showAchievement("⚔️ БОСС ПОБЕЖДЕН!", "Вы справились с серьезным испытанием!");
+            }
+            
+            // Обновляем прогресс ежедневного квеста
+            if (effect.wisdom > 10) {
+                gameData.dailyQuestProgress = Math.min(5, gameData.dailyQuestProgress + 1);
+                updateDailyQuest();
+            }
+            
+            // Показываем эффекты
+            if (effect.power > 0) showFloatingText(`+${effect.power} Сила`, '#ff6b35');
+            if (effect.wisdom > 0) showFloatingText(`+${effect.wisdom} Мудрость`, '#00aaff');
+            if (effect.honor > 0) showFloatingText(`+${effect.honor} Честь`, '#ffc107');
+            
+            updatePlayerUI();
+            updateLimitsUI();
+            checkAchievements();
+            
+            // Переходим к следующей сцене через 2 секунды
+            setTimeout(() => {
+                gameData.currentScene++;
+                nextScene();
+            }, 2000);
+        }
+
+        // Инициализация
+        window.addEventListener('load', () => {
+            createStars();
+            loadGame();
+            initVKBridge();
+            
+            // Инициализируем игровые системы
+            pvpSystem = new GameSystems.PvPSystem();
+            tournamentSystem = new GameSystems.TournamentSystem();
+            guildSystem = new GameSystems.GuildSystem();
+            limitationSystem = new GameSystems.LimitationSystem();
+            vkIntegration = new VKIntegration();
+            lobbySystem = new LobbySystem();
+            
+            // Обновляем UI
+            updateGuildUI();
+            updateLimitsUI();
+            
+            // Запускаем таймер обновления
+            setInterval(updateResetTimer, 1000);
+            
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 2000);
+        });
+
+        // Сохранение при выходе
+        window.addEventListener('beforeunload', saveGame);
     </script>
+    </div>
 </body>
 </html>
