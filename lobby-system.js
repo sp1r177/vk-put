@@ -13,8 +13,8 @@ class LobbySystem {
         this.startGlobalSync();
     }
 
-    // Загрузка данных из localStorage
-    loadData() {
+    // Загрузка данных из localStorage и серверного файла
+    async loadData() {
         const savedChallenges = localStorage.getItem('global_lobby_challenges');
         const savedRatings = localStorage.getItem('lobby_ratings');
         
@@ -25,12 +25,46 @@ class LobbySystem {
         if (savedRatings) {
             this.ratings = JSON.parse(savedRatings);
         }
+
+        // Пытаемся загрузить данные с сервера
+        try {
+            const response = await fetch('challenges-server.json');
+            if (response.ok) {
+                const serverData = await response.json();
+                if (serverData.challenges && serverData.challenges.length > 0) {
+                    // Объединяем данные с сервера и локальные
+                    const serverChallenges = serverData.challenges.filter(c => c.status === 'active');
+                    this.activeChallenges = [...this.activeChallenges, ...serverChallenges];
+                    // Удаляем дубликаты
+                    this.activeChallenges = this.activeChallenges.filter((challenge, index, self) => 
+                        index === self.findIndex(c => c.id === challenge.id)
+                    );
+                }
+            }
+        } catch (error) {
+            console.log('Не удалось загрузить данные с сервера:', error);
+        }
     }
 
-    // Сохранение данных в localStorage
-    saveData() {
+    // Сохранение данных в localStorage и на сервер
+    async saveData() {
         localStorage.setItem('global_lobby_challenges', JSON.stringify(this.activeChallenges));
         localStorage.setItem('lobby_ratings', JSON.stringify(this.ratings));
+
+        // Сохраняем на сервер
+        try {
+            const serverData = {
+                challenges: this.activeChallenges,
+                lastUpdate: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            // В реальном приложении здесь был бы POST запрос
+            // Пока сохраняем в localStorage как fallback
+            localStorage.setItem('server_challenges_backup', JSON.stringify(serverData));
+        } catch (error) {
+            console.log('Не удалось сохранить на сервер:', error);
+        }
     }
 
     // Запуск глобальной синхронизации
@@ -70,7 +104,7 @@ class LobbySystem {
     }
 
     // Создать публичный вызов
-    createPublicChallenge(player, bet, minLevel = 1, password = '') {
+    async createPublicChallenge(player, bet, minLevel = 1, password = '') {
         // Проверяем, нет ли уже активного вызова от этого игрока
         if (this.hasActiveChallenge(player.id)) {
             return { error: 'У вас уже есть активный вызов. Отмените его перед созданием нового.' };
@@ -91,7 +125,7 @@ class LobbySystem {
         };
 
         this.activeChallenges.push(challenge);
-        this.saveData();
+        await this.saveData();
         
         // Обновляем данные в реальном времени для других игроков
         this.broadcastChallengeUpdate();
@@ -140,12 +174,12 @@ class LobbySystem {
     }
 
     // Отменить вызов
-    cancelChallenge(challengeId, playerId) {
+    async cancelChallenge(challengeId, playerId) {
         const challenge = this.activeChallenges.find(c => c.id === challengeId);
         if (challenge && challenge.challenger === playerId) {
             challenge.status = 'cancelled';
             challenge.cancelledAt = Date.now();
-            this.saveData();
+            await this.saveData();
             
             // Обновляем данные в реальном времени
             this.broadcastChallengeUpdate();
